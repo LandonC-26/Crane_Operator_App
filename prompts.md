@@ -137,3 +137,8 @@ Store project prompts here.
 - **Asked:** Push the completed project.
 - **Changed:** Preparing to add or select a Git remote and push the local `main` branch. No code was changed.
 - **Worked:** Pending remote configuration check.
+
+### Request 25
+- **Asked:** Delete the duplicate repository and push the project to the public `Crane_Operator_App` repository created by the user.
+- **Changed:** Preparing to remove `LandonC-26/crane-operator-app`, set `origin` to `LandonC-26/Crane_Operator_App`, and push `main`. No app code was changed.
+- **Worked:** Pending repository deletion and push.
