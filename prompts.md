@@ -121,3 +121,14 @@ Store project prompts here.
 - **Changed:** Added two moving construction workers on the building, worker collision detection with a skull and restart dialog, and three 300–400 lb load sliders with 10 lb steps that update staging labels and attached capacity. Browser verification and commit are pending.
 - **Changed:** Browser testing confirmed moving workers, slider updates at 300/390/400 lb values, live attached capacity, worker-hit dialog, skull visibility, and restart cleanup.
 - **Worked:** Yes; Phase 5 was verified before the local commit.
+
+### Request 23
+- **Asked:** Decrease the construction workers to one.
+- **Changed:** Removed the second worker and all second-worker state, movement, and collision references while retaining the first worker's movement, collision, skull, and restart behavior.
+- **Changed:** Browser verification confirmed one construction worker remains and worker motion continues.
+- **Worked:** Yes; the single-worker Phase 5 change was verified before commit.
+
+### Request 23
+- **Asked:** Decrease the construction workers to one.
+- **Changed:** Removed the second worker element and all second-worker state, movement, and collision references while preserving one moving worker, collision detection, skull, and restart behavior.
+- **Worked:** Pending browser verification and commit.

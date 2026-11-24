@@ -587,7 +587,6 @@
     }
 
     .worker-one { left: 18%; }
-    .worker-two { left: 68%; }
 
     .worker-skull {
       position: absolute;
@@ -998,7 +997,6 @@
         <div class="building" id="building-zone">
           <div class="building-label">Building placement</div>
           <div class="worker worker-one" id="worker-one" aria-label="Construction worker"></div>
-          <div class="worker worker-two" id="worker-two" aria-label="Construction worker"></div>
           <div class="worker-skull" id="worker-skull" aria-hidden="true">&#9760;</div>
           <div class="placed-load" id="placed-load-1" style="left: 10%">350 lb</div>
           <div class="placed-load" id="placed-load-2" style="left: 38%">340 lb</div>
@@ -1100,9 +1098,7 @@
         paused: false,
         ended: false,
         workerOnePercent: 18,
-        workerTwoPercent: 68,
-        workerOneDirection: 1,
-        workerTwoDirection: -1
+        workerOneDirection: 1
       };
 
       const loads = {
@@ -1149,7 +1145,6 @@
       const scoreValue = document.getElementById("score-value");
       const bestScoreValue = document.getElementById("best-score-value");
       const workerOne = document.getElementById("worker-one");
-      const workerTwo = document.getElementById("worker-two");
       const workerSkull = document.getElementById("worker-skull");
 
       function ratedCapacity() {
@@ -1197,15 +1192,11 @@
         if (state.paused || state.ended) return;
 
         state.workerOnePercent += state.workerOneDirection * 10 * elapsed;
-        state.workerTwoPercent += state.workerTwoDirection * 10 * elapsed;
 
         if (state.workerOnePercent >= 72) state.workerOneDirection = -1;
         if (state.workerOnePercent <= 12) state.workerOneDirection = 1;
-        if (state.workerTwoPercent >= 76) state.workerTwoDirection = -1;
-        if (state.workerTwoPercent <= 18) state.workerTwoDirection = 1;
 
         workerOne.style.left = `${state.workerOnePercent}%`;
-        workerTwo.style.left = `${state.workerTwoPercent}%`;
       }
 
       function rectanglesOverlap(first, second) {
@@ -1222,7 +1213,7 @@
           ? attachedLoad.getBoundingClientRect()
           : hookRect;
 
-        if ([workerOne, workerTwo].some(worker => {
+        if ([workerOne].some(worker => {
           const workerRect = worker.getBoundingClientRect();
           return rectanglesOverlap(hookRect, workerRect) ||
             rectanglesOverlap(loadRect, workerRect);
@@ -1442,9 +1433,7 @@
         state.paused = false;
         state.ended = false;
         state.workerOnePercent = 18;
-        state.workerTwoPercent = 68;
         state.workerOneDirection = 1;
-        state.workerTwoDirection = -1;
         keys.clear();
         deliveryValue.textContent = "0 / 3";
         roundNote.textContent = "Select a staging load and move it to the building.";
@@ -1457,7 +1446,6 @@
         document.querySelectorAll(".placed-load").forEach(load => load.classList.remove("visible"));
         workerSkull.classList.remove("visible");
         workerOne.style.left = "18%";
-        workerTwo.style.left = "68%";
         pauseButton.textContent = "Pause";
         pauseButton.setAttribute("aria-label", "Pause round");
         updateScoreDisplays();
