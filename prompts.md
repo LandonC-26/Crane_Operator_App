@@ -143,3 +143,8 @@ Store project prompts here.
 - **Changed:** Preparing to remove `LandonC-26/crane-operator-app`, set `origin` to `LandonC-26/Crane_Operator_App`, and push `main`. No app code was changed.
 - **Changed:** Pushed local `main` successfully to `LandonC-26/Crane_Operator_App`. The duplicate repository could not be deleted because the available credential lacked repository-deletion permission and the browser sign-in was not complete.
 - **Worked:** Partially; push worked, duplicate deletion remains blocked on browser authentication.
+
+### Request 26
+- **Asked:** Explain how to create a GitHub repository from VS Code.
+- **Changed:** No app code was changed. Prepared VS Code steps using Source Control, Publish Branch, GitHub authentication, repository name/privacy, and optional GitHub Pages setup.
+- **Worked:** Yes.
