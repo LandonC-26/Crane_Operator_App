@@ -160,8 +160,8 @@ Required test cases:
 This app does not account for weather, wind, dynamic forces, crane internal forces, load swing, cable stretch, boom deflection, or multi-crane operations.
 
 ## Features
-Feature 1: this adds two construction workers that will walk back and forth on the building and you have to time the release peoperly to avoid hitting the workers failure to do so will cause a failure and require you to restart the game after a small skull appears on the screen. 
-Feature 2: sliders will be used to change the loads to make them lighter or heavier by 10 pounds fo each load. to give a challenge or make it easier for the player. 
+Feature 1: this adds two construction workers that will walk back and forth on the building and you have to time the release peoperly to avoid hitting the workers failure to do so will cause a failure and require you to restart the game after a small skull appears on the screen.
+Feature 2: sliders will be used to change the loads to make them lighter or heavier by 10 pounds fo each load. to give a challenge or make it easier for the player.
 
 ## Phase 5 clarifications
 - Two construction workers move continuously at a fixed horizontal speed across the building.
