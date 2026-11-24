@@ -58,3 +58,8 @@ Store project prompts here.
 - **Asked:** Execute Phase 4 by completing the timer, scoring, end states, best-score storage, responsive behavior, and accessibility behavior.
 - **Changed:** Added a three-minute countdown, 100-point delivery scores, remaining-time bonuses, time-expiration and win/loss dialogs, local best-score storage with a session fallback, and timer/score live status updates. Implementation is in place pending final source verification and commit.
 - **Worked:** Yes; the final source markers and Git diff passed before the local commit.
+
+### Request 12
+- **Asked:** Make the crane controls faster and fix inability to rotate the crane.
+- **Changed:** Increased trolley, hook, and rotation speeds; added Q/J and E/L keyboard rotation aliases; clarified rotate touch buttons; added a live angle readout; and visually rotated the crane jib and hook position. Verification and commit are pending.
+- **Worked:** Yes; source checks passed before the local commit.

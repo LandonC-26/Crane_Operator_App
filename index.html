@@ -397,7 +397,7 @@
 
     .position-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
@@ -797,6 +797,7 @@
         <div class="position-grid">
           <div class="position-readout">Radius<strong id="radius-value">50 ft</strong></div>
           <div class="position-readout">Height<strong id="height-value">300 ft</strong></div>
+          <div class="position-readout">Angle<strong id="angle-value">0°</strong></div>
         </div>
       </section>
 
@@ -820,8 +821,8 @@
           <button class="key" type="button" data-action="right">D / Right<small>Trolley right</small></button>
           <button class="key" type="button" data-action="down">S / Down<small>Lower hook</small></button>
           <button class="key" type="button" data-action="up">W / Up<small>Raise hook</small></button>
-          <button class="key" type="button" data-action="rotate-left">Q<small>Rotate left</small></button>
-          <button class="key" type="button" data-action="rotate-right">E<small>Rotate right</small></button>
+          <button class="key" type="button" data-action="rotate-left" aria-keyshortcuts="Q J">Q / J<small>Rotate left</small></button>
+          <button class="key" type="button" data-action="rotate-right" aria-keyshortcuts="E L">E / L<small>Rotate right</small></button>
           <button class="key" type="button" data-action="load">F / Space<small>Pick up or drop</small></button>
         </div>
       </div>
@@ -873,8 +874,10 @@
       const capacityCard = document.querySelector(".capacity-card");
       const cable = document.querySelector(".cable");
       const hook = document.querySelector(".hook");
+      const jib = document.querySelector(".jib");
       const sideCable = document.querySelector(".side-cable");
       const sideHook = document.querySelector(".side-hook");
+      const angleValue = document.getElementById("angle-value");
       const pauseButton = document.querySelector(".pause-button");
       const worksite = document.querySelector(".worksite");
       const deliveryValue = document.getElementById("delivery-value");
@@ -945,6 +948,8 @@
         cable.style.height = `${Math.max(20, hookY - 102)}px`;
         hook.style.left = `${hookX - 13}px`;
         hook.style.top = `${hookY - 10}px`;
+        jib.style.transform = `skewX(-5deg) rotate(${state.angle * 0.18}deg)`;
+        angleValue.textContent = `${Math.round(state.angle)}°`;
 
         const sideRadiusRatio = (state.radius - 50) / 100;
         const sideCableLeft = 114 + sideRadiusRatio * 58;
@@ -1109,8 +1114,12 @@
         S: "down",
         q: "rotate-left",
         Q: "rotate-left",
+        j: "rotate-left",
+        J: "rotate-left",
         e: "rotate-right",
-        E: "rotate-right"
+        E: "rotate-right",
+        l: "rotate-right",
+        L: "rotate-right"
       };
 
       window.addEventListener("keydown", event => {
@@ -1162,12 +1171,12 @@
           if (state.remainingSeconds <= 0) {
             endRoundByTime();
           }
-          if (keys.has("left")) state.radius = Math.max(50, state.radius - 20 * elapsed);
-          if (keys.has("right")) state.radius = Math.min(150, state.radius + 20 * elapsed);
-          if (keys.has("down")) state.height = Math.max(0, state.height - 15 * elapsed);
-          if (keys.has("up")) state.height = Math.min(300, state.height + 15 * elapsed);
-          if (keys.has("rotate-left")) state.angle = (state.angle - 30 * elapsed + 360) % 360;
-          if (keys.has("rotate-right")) state.angle = (state.angle + 30 * elapsed) % 360;
+          if (keys.has("left")) state.radius = Math.max(50, state.radius - 35 * elapsed);
+          if (keys.has("right")) state.radius = Math.min(150, state.radius + 35 * elapsed);
+          if (keys.has("down")) state.height = Math.max(0, state.height - 25 * elapsed);
+          if (keys.has("up")) state.height = Math.min(300, state.height + 25 * elapsed);
+          if (keys.has("rotate-left")) state.angle = (state.angle - 75 * elapsed + 360) % 360;
+          if (keys.has("rotate-right")) state.angle = (state.angle + 75 * elapsed) % 360;
           update();
         }
 
