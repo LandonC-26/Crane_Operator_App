@@ -560,7 +560,7 @@
       .status-stack {
         grid-column: 1 / -1;
         grid-row: 2;
-        grid-template-columns: repeat(4, minmax(130px, 1fr));
+        grid-template-columns: repeat(5, minmax(120px, 1fr));
         grid-template-rows: auto;
       }
 
@@ -600,6 +600,12 @@
       .capacity-card {
         grid-column: 1 / -1;
         min-height: 104px;
+      }
+
+      .radius-card,
+      .round-card,
+      .best-card {
+        grid-column: 1 / -1;
       }
 
       .round-card {
@@ -769,12 +775,12 @@
     <aside class="status-stack" aria-label="Round status">
       <section class="status-card panel" aria-label="Time remaining">
         <span>Time</span>
-        <strong>03:00</strong>
+        <strong id="timer-value" aria-live="polite">03:00</strong>
       </section>
 
       <section class="status-card panel" aria-label="Score">
         <span>Score</span>
-        <strong>0000</strong>
+        <strong id="score-value" aria-live="polite">0000</strong>
       </section>
 
       <section class="status-card capacity-card panel" aria-labelledby="capacity-title">
@@ -798,6 +804,11 @@
         <span>Deliveries</span>
         <strong id="delivery-value">0 / 3</strong>
         <div class="capacity-note" id="round-note">Select a staging load and move it to the building.</div>
+      </section>
+
+      <section class="status-card best-card panel" aria-label="Best score">
+        <span>Best score</span>
+        <strong id="best-score-value">0000</strong>
       </section>
     </aside>
 
@@ -833,6 +844,8 @@
         attachedLoad: 0,
         attachedLoadId: null,
         deliveries: 0,
+        score: 0,
+        remainingSeconds: 180,
         paused: false,
         ended: false
       };
@@ -870,10 +883,44 @@
       const endTitle = document.getElementById("end-title");
       const endMessage = document.getElementById("end-message");
       const restartButton = document.getElementById("restart-button");
+      const timerValue = document.getElementById("timer-value");
+      const scoreValue = document.getElementById("score-value");
+      const bestScoreValue = document.getElementById("best-score-value");
 
       function ratedCapacity() {
         const band = [...chart].reverse().find(item => state.radius >= item.radius);
         return band ? band.capacity : chart[0].capacity;
+      }
+
+      let sessionBest = 0;
+      try {
+        sessionBest = Number(localStorage.getItem("craneOperatorBest")) || 0;
+      } catch (error) {
+        sessionBest = 0;
+      }
+      bestScoreValue.textContent = String(sessionBest).padStart(4, "0");
+
+      function formatTime(seconds) {
+        const safeSeconds = Math.max(0, Math.ceil(seconds));
+        const minutes = Math.floor(safeSeconds / 60);
+        const remainder = safeSeconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+      }
+
+      function updateScoreDisplays() {
+        timerValue.textContent = formatTime(state.remainingSeconds);
+        scoreValue.textContent = String(state.score).padStart(4, "0");
+      }
+
+      function saveBestScore() {
+        if (state.score <= sessionBest) return;
+        sessionBest = state.score;
+        bestScoreValue.textContent = String(sessionBest).padStart(4, "0");
+        try {
+          localStorage.setItem("craneOperatorBest", String(sessionBest));
+        } catch (error) {
+          sessionBest = sessionBest;
+        }
       }
 
       function capacityPercent() {
@@ -949,15 +996,20 @@
           state.attachedLoadId = null;
           state.attachedLoad = 0;
           state.deliveries += 1;
+          state.score += 100;
           deliveryValue.textContent = `${state.deliveries} / 3`;
           roundNote.textContent = `Load ${loadId} delivered successfully.`;
+          updateScoreDisplays();
           update();
           if (state.deliveries === 3) {
             state.ended = true;
             state.paused = true;
             keys.clear();
+            state.score += Math.floor(state.remainingSeconds) * 10;
             endTitle.textContent = "All loads delivered";
-            endMessage.textContent = "You completed the simplified crane run.";
+            endMessage.textContent = `You completed the run with ${state.score} points.`;
+            updateScoreDisplays();
+            saveBestScore();
             endPanel.classList.add("visible");
             restartButton.focus();
           }
@@ -990,6 +1042,7 @@
         worksite.classList.add("tip-over");
         endTitle.textContent = "Crane tipped";
         endMessage.textContent = "The crane reached 100% capacity or more.";
+        saveBestScore();
         endPanel.classList.add("visible");
         restartButton.focus();
       }
@@ -1001,6 +1054,8 @@
         state.attachedLoad = 0;
         state.attachedLoadId = null;
         state.deliveries = 0;
+        state.score = 0;
+        state.remainingSeconds = 180;
         state.paused = false;
         state.ended = false;
         keys.clear();
@@ -1014,6 +1069,7 @@
         });
         pauseButton.textContent = "Pause";
         pauseButton.setAttribute("aria-label", "Pause round");
+        updateScoreDisplays();
         update();
       }
 
@@ -1022,6 +1078,20 @@
         keys.clear();
         pauseButton.textContent = state.paused ? "Resume" : "Pause";
         pauseButton.setAttribute("aria-label", state.paused ? "Resume round" : "Pause round");
+      }
+
+      function endRoundByTime() {
+        if (state.ended) return;
+        state.remainingSeconds = 0;
+        state.ended = true;
+        state.paused = true;
+        keys.clear();
+        endTitle.textContent = "Time expired";
+        endMessage.textContent = `The crane round ended before all loads were delivered. Final score: ${state.score}.`;
+        updateScoreDisplays();
+        saveBestScore();
+        endPanel.classList.add("visible");
+        restartButton.focus();
       }
 
       const keyActions = {
@@ -1088,6 +1158,10 @@
         previousTime = now;
 
         if (!state.paused && !state.ended) {
+          state.remainingSeconds = Math.max(0, state.remainingSeconds - elapsed);
+          if (state.remainingSeconds <= 0) {
+            endRoundByTime();
+          }
           if (keys.has("left")) state.radius = Math.max(50, state.radius - 20 * elapsed);
           if (keys.has("right")) state.radius = Math.min(150, state.radius + 20 * elapsed);
           if (keys.has("down")) state.height = Math.max(0, state.height - 15 * elapsed);
@@ -1101,6 +1175,7 @@
       }
 
       window.addEventListener("resize", update);
+      updateScoreDisplays();
       update();
       requestAnimationFrame(animate);
     })();

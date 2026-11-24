@@ -53,3 +53,8 @@ Store project prompts here.
 - **Asked:** Execute Phase 3 by adding real load pickup and drop behavior.
 - **Changed:** Replaced the demo-load toggle with three fixed loads, staging and building zone checks, attached-load capacity updates, successful delivery counting, hidden staging loads after pickup, and a local tip-over end panel with restart. The implementation is in place pending verification and commit.
 - **Worked:** Yes; the source changes and Git diff were checked before the local commit.
+
+### Request 11
+- **Asked:** Execute Phase 4 by completing the timer, scoring, end states, best-score storage, responsive behavior, and accessibility behavior.
+- **Changed:** Added a three-minute countdown, 100-point delivery scores, remaining-time bonuses, time-expiration and win/loss dialogs, local best-score storage with a session fallback, and timer/score live status updates. Implementation is in place pending final source verification and commit.
+- **Worked:** Yes; the final source markers and Git diff passed before the local commit.
