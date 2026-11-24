@@ -131,4 +131,9 @@ Store project prompts here.
 ### Request 23
 - **Asked:** Decrease the construction workers to one.
 - **Changed:** Removed the second worker element and all second-worker state, movement, and collision references while preserving one moving worker, collision detection, skull, and restart behavior.
-- **Worked:** Pending browser verification and commit.
+- **Worked:** Yes; browser verification confirmed exactly one worker remained and the change was committed.
+
+### Request 24
+- **Asked:** Push the completed project.
+- **Changed:** Preparing to add or select a Git remote and push the local `main` branch. No code was changed.
+- **Worked:** Pending remote configuration check.
