@@ -1131,18 +1131,19 @@
           visualHookX = buildingRect.left - worksiteRect.left + buildingRect.width / 2;
         }
 
-        const trolleyRelativeToJib = visualHookX - (towerRect.left - worksiteRect.left) + 118;
-        trolley.style.left = `${Math.max(8, Math.min(290, trolleyRelativeToJib))}px`;
-
+        const jibElement = document.querySelector(".jib");
+        const jibRect = jibElement.getBoundingClientRect();
+        const trolleyLeftInJib = visualHookX - (jibRect.left - worksiteRect.left);
+        trolley.style.left = `${Math.max(15, Math.min(jibRect.width - 15, trolleyLeftInJib))}px`;
         const trolleyRect = trolley.getBoundingClientRect();
         const trolleyX = trolleyRect.left - worksiteRect.left + trolleyRect.width / 2;
         const cableTop = trolleyRect.bottom - worksiteRect.top - 4;
         cable.style.left = `${trolleyX}px`;
         cable.style.top = `${cableTop}px`;
         cable.style.height = `${Math.max(20, visualHookY - cableTop)}px`;
-        hook.style.left = `${visualHookX - 17}px`;
+        hook.style.left = `${trolleyX - 17}px`;
         hook.style.top = `${visualHookY - 14}px`;
-        jib.style.transform = `skewX(-5deg) rotate(${(state.angle - 180) * 0.12}deg)`;
+        jibElement.style.transform = "skewX(-5deg)";
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
         yValue.textContent = `${Math.round(position.y)} ft`;

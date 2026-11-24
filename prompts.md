@@ -109,3 +109,9 @@ Store project prompts here.
 - **Changed:** Removed conflicting angle/radius projection logic and reduced the crane to one direct radius-to-horizontal-hook model. Zone snapping now applies only when the hook is in staging or building range, and jib rotation is lightly damped.
 - **Changed:** Browser verification confirmed the hook is inside the staging zone for pickup and inside the building zone for drop, with successful first-load delivery.
 - **Worked:** Yes; simplified visual behavior was verified before commit.
+
+### Request 21
+- **Asked:** Fix the hook being visually far from the crane and disconnected from the wire.
+- **Changed:** Switched the hook and cable to the trolley's actual screen position, constrained the trolley to the jib, and kept the jib fixed for a mechanically simple side view. Browser verification and commit are pending.
+- **Changed:** Browser geometry confirmed trolley, cable, and hook share the same vertical axis with less than 5 pixels of offset at staging and building positions.
+- **Worked:** Yes; the hook and wire connection were simplified and verified before commit.
