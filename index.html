@@ -243,6 +243,7 @@
       background: var(--yellow);
       border: 3px solid var(--steel-dark);
       transform: skewX(-5deg);
+      transform-origin: 50% 50%;
     }
 
     .jib-end {
@@ -1110,22 +1111,44 @@
         const hookXPercent = parseFloat(mapPositionValue.left);
         const hookYPercent = parseFloat(mapPositionValue.top);
         const width = worksite.clientWidth;
-        const hookX = width * hookXPercent / 100;
-        const mapHookY = worksiteHeight * hookYPercent / 100;
-        const hookY = mapHookY - (state.height / 300) * worksiteHeight * 0.32;
         const worksiteRect = worksite.getBoundingClientRect();
-          const towerRect = document.querySelector(".tower").getBoundingClientRect();
-          const trolleyRelativeToJib = Math.max(8, Math.min(290, hookX - (towerRect.left - worksiteRect.left) + 118));
-          trolley.style.left = `${trolleyRelativeToJib}px`;
+        const towerRect = document.querySelector(".tower").getBoundingClientRect();
+        const pivotX = towerRect.left - worksiteRect.left + towerRect.width / 2;
+        const pivotY = towerRect.top - worksiteRect.top + 44;
+
+        const craneAngleRadians = state.angle * Math.PI / 180;
+        const visualRadiusRatio = (state.radius - 50) / 100;
+        const visualRadiusPixels = visualRadiusRatio * 230 + 115;
+        let visualHookX = pivotX + Math.cos(craneAngleRadians) * visualRadiusPixels;
+        let visualHookY = pivotY + Math.sin(craneAngleRadians) * visualRadiusPixels * 0.18;
+
+        const stagingRect = stagingZone.getBoundingClientRect();
+        const buildingRect = buildingZone.getBoundingClientRect();
+        const stagingLoad = stagingZone.querySelector(".load:not(.hidden-load)");
+        const stagingLoadRect = stagingLoad?.getBoundingClientRect();
+
+        if (inStagingZone()) {
+          visualHookX = stagingLoadRect ? stagingLoadRect.left - worksiteRect.left + stagingLoadRect.width / 2 : stagingRect.left - worksiteRect.left + stagingRect.width / 2;
+          visualHookY = stagingLoadRect ? stagingLoadRect.top - worksiteRect.top + stagingLoadRect.height / 2 : stagingRect.top - worksiteRect.top + stagingRect.height * 0.8;
+        } else if (inBuildingZone()) {
+          visualHookX = buildingRect.left - worksiteRect.left + buildingRect.width / 2;
+          visualHookY = buildingRect.top - worksiteRect.top + buildingRect.height * 0.72;
+        }
+
+        visualHookX = Math.max(8, Math.min(width - 8, visualHookX));
+        visualHookY = Math.max(24, Math.min(worksiteHeight - 24, visualHookY));
+        const trolleyRelativeToJib = visualHookX - (towerRect.left - worksiteRect.left) + 118;
+        trolley.style.left = `${Math.max(8, Math.min(290, trolleyRelativeToJib))}px`;
+
         const trolleyRect = trolley.getBoundingClientRect();
         const trolleyX = trolleyRect.left - worksiteRect.left + trolleyRect.width / 2;
         const cableTop = trolleyRect.bottom - worksiteRect.top - 4;
         cable.style.left = `${trolleyX}px`;
         cable.style.top = `${cableTop}px`;
-        cable.style.height = `${Math.max(20, hookY - cableTop)}px`;
-        hook.style.left = `${trolleyX - 17}px`;
-        hook.style.top = `${hookY - 14}px`;
-        jib.style.transform = `skewX(-5deg) rotate(${state.angle}deg)`;
+        cable.style.height = `${Math.max(20, visualHookY - cableTop)}px`;
+        hook.style.left = `${visualHookX - 17}px`;
+        hook.style.top = `${visualHookY - 14}px`;
+        jib.style.transform = `skewX(-5deg) rotate(${state.angle - 180}deg)`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
         yValue.textContent = `${Math.round(position.y)} ft`;
@@ -1157,7 +1180,7 @@
         attachedLoad.classList.toggle("visible", state.attachedLoadId !== null);
         attachedLoad.textContent = state.attachedLoad ? `${state.attachedLoad} lb` : "";
         attachedLoad.style.left = `${trolleyX}px`;
-        attachedLoad.style.top = `${hookY + 18}px`;
+        attachedLoad.style.top = `${visualHookY + 18}px`;
 
         if (percent >= 100) {
           capacityNote.textContent = "Tip danger - crane capacity exceeded";

@@ -96,3 +96,10 @@ Store project prompts here.
 - **Asked:** Complete a full browser run-through and test every app function for proper use.
 - **Changed:** Audited keyboard and touch controls, pause/resume, restart, movement limits, staging pickup, building drop, all three deliveries, scoring, timer, 90% warning, 100% tipping, and restart after tip. No app code was changed; prepared a malfunction report and implementation recommendations.
 - **Worked:** Yes; the core delivery run and edge-state tests completed successfully.
+
+### Request 19
+- **Asked:** Fix the visual model so the crane hook can visibly reach the staging area and rotate 360 degrees.
+- **Changed:** Updated jib, trolley, cable, hook, and attached-load visuals to use a shared 360-degree crane angle and radius. The hook now projects left for the staging side and right for the building side. Browser verification and commit are pending.
+- **Changed:** Anchored low-height staging/building hook positions to the actual staging-load and building rectangles, while retaining continuous 360-degree radial movement elsewhere.
+- **Changed:** Browser geometry confirmed the hook is inside the staging zone at X=-55 ft and inside the building zone after rotation; 360-degree angle changes moved the hook across left, rear, and right positions.
+- **Worked:** Yes; staging reach and 360-degree visual rotation were verified before commit.
