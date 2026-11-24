@@ -561,6 +561,89 @@
       display: flex;
     }
 
+    .worker {
+      position: absolute;
+      z-index: 6;
+      top: 42px;
+      width: 18px;
+      height: 30px;
+      border: 2px solid #26384a;
+      border-radius: 8px 8px 3px 3px;
+      background: #e5a33a;
+      box-shadow: 0 8px 0 -6px #26384a;
+      pointer-events: none;
+    }
+
+    .worker::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: -8px;
+      width: 8px;
+      height: 8px;
+      border: 2px solid #26384a;
+      border-radius: 50%;
+      background: #f1c27d;
+    }
+
+    .worker-one { left: 18%; }
+    .worker-two { left: 68%; }
+
+    .worker-skull {
+      position: absolute;
+      z-index: 20;
+      display: none;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(23, 36, 58, 0.92);
+      color: white;
+      font-size: 38px;
+    }
+
+    .worker-skull.visible {
+      display: flex;
+    }
+
+    .load-settings {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 8px;
+      grid-column: 1 / -1;
+      margin-top: 8px;
+    }
+
+    .load-setting {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 6px 8px;
+      border: 1px solid #d2dde1;
+      border-radius: 7px;
+      background: #f8fafb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .load-setting output {
+      display: block;
+      margin-top: 2px;
+      color: #536579;
+      font-size: 11px;
+    }
+
+    .load-setting input {
+      width: 100%;
+      accent-color: #536579;
+    }
+
     .end-panel {
       position: fixed;
       inset: 0;
@@ -914,6 +997,9 @@
 
         <div class="building" id="building-zone">
           <div class="building-label">Building placement</div>
+          <div class="worker worker-one" id="worker-one" aria-label="Construction worker"></div>
+          <div class="worker worker-two" id="worker-two" aria-label="Construction worker"></div>
+          <div class="worker-skull" id="worker-skull" aria-hidden="true">&#9760;</div>
           <div class="placed-load" id="placed-load-1" style="left: 10%">350 lb</div>
           <div class="placed-load" id="placed-load-2" style="left: 38%">340 lb</div>
           <div class="placed-load" id="placed-load-3" style="left: 66%">360 lb</div>
@@ -976,6 +1062,20 @@
           <button class="key" type="button" data-action="load">F / Space<small>Pick up or drop</small></button>
         </div>
       </div>
+      <div class="load-settings" aria-label="Load weight settings">
+        <label class="load-setting">Load 1
+          <input type="range" id="load-1-slider" min="300" max="400" step="10" value="350">
+          <output id="load-1-output" for="load-1-slider">350 lb</output>
+        </label>
+        <label class="load-setting">Load 2
+          <input type="range" id="load-2-slider" min="300" max="400" step="10" value="340">
+          <output id="load-2-output" for="load-2-slider">340 lb</output>
+        </label>
+        <label class="load-setting">Load 3
+          <input type="range" id="load-3-slider" min="300" max="400" step="10" value="360">
+          <output id="load-3-output" for="load-3-slider">360 lb</output>
+        </label>
+      </div>
       <button class="pause-button" type="button" data-action="pause" aria-label="Pause round">Pause</button>
     </section>
   </main>
@@ -998,7 +1098,11 @@
         score: 0,
         remainingSeconds: 180,
         paused: false,
-        ended: false
+        ended: false,
+        workerOnePercent: 18,
+        workerTwoPercent: 68,
+        workerOneDirection: 1,
+        workerTwoDirection: -1
       };
 
       const loads = {
@@ -1044,6 +1148,9 @@
       const timerValue = document.getElementById("timer-value");
       const scoreValue = document.getElementById("score-value");
       const bestScoreValue = document.getElementById("best-score-value");
+      const workerOne = document.getElementById("worker-one");
+      const workerTwo = document.getElementById("worker-two");
+      const workerSkull = document.getElementById("worker-skull");
 
       function ratedCapacity() {
         const band = [...chart].reverse().find(item => state.radius >= item.radius);
@@ -1084,6 +1191,58 @@
       function capacityPercent() {
         if (!state.attachedLoad) return 0;
         return (state.attachedLoad / ratedCapacity()) * 100;
+      }
+
+      function updateWorkers(elapsed) {
+        if (state.paused || state.ended) return;
+
+        state.workerOnePercent += state.workerOneDirection * 10 * elapsed;
+        state.workerTwoPercent += state.workerTwoDirection * 10 * elapsed;
+
+        if (state.workerOnePercent >= 72) state.workerOneDirection = -1;
+        if (state.workerOnePercent <= 12) state.workerOneDirection = 1;
+        if (state.workerTwoPercent >= 76) state.workerTwoDirection = -1;
+        if (state.workerTwoPercent <= 18) state.workerTwoDirection = 1;
+
+        workerOne.style.left = `${state.workerOnePercent}%`;
+        workerTwo.style.left = `${state.workerTwoPercent}%`;
+      }
+
+      function rectanglesOverlap(first, second) {
+        return first.left < second.right &&
+          first.right > second.left &&
+          first.top < second.bottom &&
+          first.bottom > second.top;
+      }
+
+      function checkWorkerCollision() {
+        if (!state.attachedLoadId || state.ended) return false;
+        const hookRect = document.querySelector(".hook").getBoundingClientRect();
+        const loadRect = attachedLoad.classList.contains("visible")
+          ? attachedLoad.getBoundingClientRect()
+          : hookRect;
+
+        if ([workerOne, workerTwo].some(worker => {
+          const workerRect = worker.getBoundingClientRect();
+          return rectanglesOverlap(hookRect, workerRect) ||
+            rectanglesOverlap(loadRect, workerRect);
+        })) {
+          endRoundByWorker();
+          return true;
+        }
+        return false;
+      }
+
+      function endRoundByWorker() {
+        state.ended = true;
+        state.paused = true;
+        keys.clear();
+        workerSkull.classList.add("visible");
+        endTitle.textContent = "Worker hit";
+        endMessage.textContent = "The load struck a construction worker. Restart to try again.";
+        saveBestScore();
+        endPanel.classList.add("visible");
+        restartButton.focus();
       }
 
       function craneWorldPosition() {
@@ -1176,6 +1335,7 @@
         attachedLoad.textContent = state.attachedLoad ? `${state.attachedLoad} lb` : "";
         attachedLoad.style.left = `${trolleyX}px`;
         attachedLoad.style.top = `${visualHookY + 18}px`;
+        checkWorkerCollision();
 
         if (percent >= 100) {
           capacityNote.textContent = "Tip danger - crane capacity exceeded";
@@ -1211,6 +1371,7 @@
             roundNote.textContent = "Move lower into the marked building zone before dropping.";
             return;
           }
+          if (checkWorkerCollision()) return;
 
           const loadId = state.attachedLoadId;
           loads[loadId].collected = true;
@@ -1280,6 +1441,10 @@
         state.remainingSeconds = 180;
         state.paused = false;
         state.ended = false;
+        state.workerOnePercent = 18;
+        state.workerTwoPercent = 68;
+        state.workerOneDirection = 1;
+        state.workerTwoDirection = -1;
         keys.clear();
         deliveryValue.textContent = "0 / 3";
         roundNote.textContent = "Select a staging load and move it to the building.";
@@ -1290,6 +1455,9 @@
           document.querySelector(`[data-load-id="${id}"]`)?.classList.remove("hidden-load");
         });
         document.querySelectorAll(".placed-load").forEach(load => load.classList.remove("visible"));
+        workerSkull.classList.remove("visible");
+        workerOne.style.left = "18%";
+        workerTwo.style.left = "68%";
         pauseButton.textContent = "Pause";
         pauseButton.setAttribute("aria-label", "Pause round");
         updateScoreDisplays();
@@ -1379,6 +1547,28 @@
 
       restartButton.addEventListener("click", reset);
 
+      [1, 2, 3].forEach(loadId => {
+        const slider = document.getElementById(`load-${loadId}-slider`);
+        const output = document.getElementById(`load-${loadId}-output`);
+        slider.addEventListener("input", () => {
+          const weight = Number(slider.value);
+          loads[loadId].weight = weight;
+          output.value = `${weight} lb`;
+          output.textContent = `${weight} lb`;
+          const loadElement = document.querySelector(`[data-load-id="${loadId}"]`);
+          const loadLabel = loadElement?.querySelector(".load-label");
+          if (loadLabel) loadLabel.textContent = `${weight} lb`;
+          loadElement?.setAttribute("aria-label", `${weight} pound load`);
+          const placedLabel = document.getElementById(`placed-load-${loadId}`);
+          if (placedLabel) placedLabel.textContent = `${weight} lb`;
+
+          if (state.attachedLoadId === loadId) {
+            state.attachedLoad = weight;
+          }
+          update();
+        });
+      });
+
       let previousTime = performance.now();
       function animate(now) {
         const elapsed = Math.min((now - previousTime) / 1000, 0.05);
@@ -1396,6 +1586,7 @@
           if (keys.has("up")) state.height = Math.min(300, state.height + 21.25 * elapsed);
           if (keys.has("rotate-left")) state.angle = (state.angle - 63.75 * elapsed + 360) % 360;
           if (keys.has("rotate-right")) state.angle = (state.angle + 63.75 * elapsed) % 360;
+          updateWorkers(elapsed);
           update();
         }
 

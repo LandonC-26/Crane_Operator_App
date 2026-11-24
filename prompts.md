@@ -115,3 +115,9 @@ Store project prompts here.
 - **Changed:** Switched the hook and cable to the trolley's actual screen position, constrained the trolley to the jib, and kept the jib fixed for a mechanically simple side view. Browser verification and commit are pending.
 - **Changed:** Browser geometry confirmed trolley, cable, and hook share the same vertical axis with less than 5 pixels of offset at staging and building positions.
 - **Worked:** Yes; the hook and wire connection were simplified and verified before commit.
+
+### Request 22
+- **Asked:** Execute Phase 5.
+- **Changed:** Added two moving construction workers on the building, worker collision detection with a skull and restart dialog, and three 300–400 lb load sliders with 10 lb steps that update staging labels and attached capacity. Browser verification and commit are pending.
+- **Changed:** Browser testing confirmed moving workers, slider updates at 300/390/400 lb values, live attached capacity, worker-hit dialog, skull visibility, and restart cleanup.
+- **Worked:** Yes; Phase 5 was verified before the local commit.
