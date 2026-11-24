@@ -73,3 +73,9 @@ Store project prompts here.
 - **Asked:** Make the crane, load, staging, and building displays accurately reflect the shared X/Y position instead of independent estimates.
 - **Changed:** Added a shared crane X/Y/Z model based on radius and angle, synchronized the map hook and crane jib with X/Y, synchronized the side view with radius and height, moved staging and building to shared map coordinates, added X/Y/Z/angle readouts, and made attached loads follow the hook. Delivered loads now remain labeled on the building.
 - **Worked:** Yes; browser testing delivered all three loads and showed the win dialog with accurate X/Y/Z and angle readouts.
+
+### Request 15
+- **Asked:** Review the specification for Phase 5 clarifications, and execute Phase 6 by correcting crane appearance and slowing controls.
+- **Changed:** Added Phase 5 clarifications for construction workers, load sliders, crane alignment, and control behavior. Updated the crane base to meet the brown ground section, added a visible trolley and cable connection to the jib, and reduced trolley, hook, and rotation speeds by 15%. Browser verification and commit are pending.
+- **Changed:** Browser testing confirmed the slower controls, crane trolley, cable, and brown ground alignment. A staged load attached successfully and the crane base measured at the brown section boundary.
+- **Worked:** Yes; verified the crane appearance and slowed controls before the local commit.

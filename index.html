@@ -181,7 +181,7 @@
       min-height: 460px;
       background:
         linear-gradient(90deg, transparent 49.8%, rgba(83,101,121,.12) 50%, transparent 50.2%),
-        linear-gradient(#dfeaec 0 58%, #b7c3ac 58%);
+        linear-gradient(#dfeaec 0 58%, #a98b63 58%);
       border: 1px solid var(--line);
       border-radius: 10px;
       box-shadow: inset 0 0 0 8px rgba(255,255,255,.45);
@@ -215,7 +215,7 @@
     .tower {
       position: absolute;
       left: 50%;
-      bottom: 42px;
+      bottom: 42%;
       width: 62px;
       height: 260px;
       transform: translateX(-50%);
@@ -257,11 +257,36 @@
       background-size: 24px 24px;
     }
 
+    .trolley {
+      position: absolute;
+      z-index: 5;
+      top: 32px;
+      left: -118px;
+      width: 22px;
+      height: 16px;
+      border: 3px solid var(--steel-dark);
+      border-radius: 3px;
+      background: var(--yellow);
+      transform: translateX(-50%);
+    }
+
+    .tower-base {
+      position: absolute;
+      left: 8px;
+      bottom: -10px;
+      width: 46px;
+      height: 18px;
+      border: 4px solid var(--steel-dark);
+      border-radius: 3px 3px 0 0;
+      background: #657c8a;
+      z-index: 3;
+    }
+
     .cable {
       position: absolute;
       z-index: 4;
       left: 72%;
-      top: 102px;
+      top: 48px;
       width: 2px;
       height: 132px;
       background: #1d2b3b;
@@ -818,6 +843,8 @@
         <div class="tower" aria-label="Tower crane">
           <div class="mast"></div>
           <div class="jib"></div>
+          <div class="tower-base"></div>
+          <div class="trolley" id="crane-trolley"></div>
         </div>
         <div class="cable" aria-hidden="true"></div>
         <div class="hook" aria-label="Crane hook"></div>
@@ -935,6 +962,7 @@
       const cable = document.querySelector(".cable");
       const hook = document.querySelector(".hook");
       const jib = document.querySelector(".jib");
+      const trolley = document.getElementById("crane-trolley");
       const sideCable = document.querySelector(".side-cable");
       const sideHook = document.querySelector(".side-hook");
       const angleValue = document.getElementById("angle-value");
@@ -1026,11 +1054,13 @@
         const hookY = mapHookY - (state.height / 300) * worksiteHeight * 0.32;
 
         cable.style.left = `${hookX}px`;
-        cable.style.top = "102px";
-        cable.style.height = `${Math.max(20, hookY - 102)}px`;
+        cable.style.top = "48px";
+        cable.style.height = `${Math.max(20, hookY - 48)}px`;
         hook.style.left = `${hookX - 13}px`;
         hook.style.top = `${hookY - 10}px`;
         jib.style.transform = `skewX(-5deg) rotate(${state.angle}deg)`;
+        const trolleyOffset = ((position.x + 150) / 300) * 298 - 118;
+        trolley.style.left = `${Math.max(-118, Math.min(180, trolleyOffset))}px`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
         yValue.textContent = `${Math.round(position.y)} ft`;
@@ -1277,12 +1307,12 @@
             endRoundByTime();
           }
           updateScoreDisplays();
-          if (keys.has("left")) state.radius = Math.max(50, state.radius - 35 * elapsed);
-          if (keys.has("right")) state.radius = Math.min(150, state.radius + 35 * elapsed);
-          if (keys.has("down")) state.height = Math.max(0, state.height - 25 * elapsed);
-          if (keys.has("up")) state.height = Math.min(300, state.height + 25 * elapsed);
-          if (keys.has("rotate-left")) state.angle = (state.angle - 75 * elapsed + 360) % 360;
-          if (keys.has("rotate-right")) state.angle = (state.angle + 75 * elapsed) % 360;
+          if (keys.has("left")) state.radius = Math.max(50, state.radius - 29.75 * elapsed);
+          if (keys.has("right")) state.radius = Math.min(150, state.radius + 29.75 * elapsed);
+          if (keys.has("down")) state.height = Math.max(0, state.height - 21.25 * elapsed);
+          if (keys.has("up")) state.height = Math.min(300, state.height + 21.25 * elapsed);
+          if (keys.has("rotate-left")) state.angle = (state.angle - 63.75 * elapsed + 360) % 360;
+          if (keys.has("rotate-right")) state.angle = (state.angle + 63.75 * elapsed) % 360;
           update();
         }
 

@@ -158,3 +158,19 @@ Required test cases:
 
 ## Out of scope
 This app does not account for weather, wind, dynamic forces, crane internal forces, load swing, cable stretch, boom deflection, or multi-crane operations.
+
+## Features
+Feature 1: this adds two construction workers that will walk back and forth on the building and you have to time the release peoperly to avoid hitting the workers failure to do so will cause a failure and require you to restart the game after a small skull appears on the screen. 
+Feature 2: sliders will be used to change the loads to make them lighter or heavier by 10 pounds fo each load. to give a challenge or make it easier for the player. 
+
+## Phase 5 clarifications
+- Two construction workers move continuously at a fixed horizontal speed across the building.
+- A worker is considered hit when an attached load or released load overlaps the worker's position and footprint.
+- A hit shows a small skull, ends the current round, and requires a restart before play continues.
+- Each load has one slider that changes its weight in increments of 10 pounds.
+- Slider limits are 300 to 400 pounds for each load, unless a separate load-chart test requires an out-of-range value.
+- Changing a load with a slider updates capacity immediately.
+- The staging and building must appear in shared X/Y coordinates with the crane hook and side view.
+- The crane tower base is positioned at the boundary between the construction ground and brown worksite section.
+- The crane cable starts visibly at the jib trolley and ends at the hook.
+- The crane control speeds are 15% slower than the existing 35 ft/s, 25 ft/s, and 75 deg/s values.
