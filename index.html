@@ -281,8 +281,9 @@
 
     .staging {
       position: absolute;
-      left: 15%;
-      bottom: 36px;
+      left: 50%;
+      top: 58%;
+      transform: translate(-50%, -50%);
       width: 150px;
       height: 105px;
       z-index: 2;
@@ -297,8 +298,10 @@
 
     .building {
       position: absolute;
-      right: 15%;
-      bottom: 36px;
+      right: auto;
+      left: 50%;
+      top: 58%;
+      transform: translate(-50%, -50%);
       z-index: 2;
       width: 180px;
       height: 132px;
@@ -408,7 +411,7 @@
 
     .position-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
@@ -429,6 +432,48 @@
 
     .load.hidden-load {
       display: none;
+    }
+
+    .attached-load {
+      position: absolute;
+      z-index: 8;
+      display: none;
+      width: 38px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      transform: translate(-50%, 8px);
+      border: 3px solid #6b4d31;
+      border-radius: 4px;
+      background: #c89b69;
+      color: #2d2117;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .attached-load.visible {
+      display: flex;
+    }
+
+    .placed-load {
+      position: absolute;
+      z-index: 3;
+      display: none;
+      bottom: 12px;
+      width: 34px;
+      height: 24px;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid #6b4d31;
+      border-radius: 4px;
+      background: #c89b69;
+      color: #2d2117;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .placed-load.visible {
+      display: flex;
     }
 
     .end-panel {
@@ -763,7 +808,7 @@
         <div class="radius-ring r2" aria-hidden="true"></div>
         <div class="radius-ring r3" aria-hidden="true"></div>
 
-        <div class="staging" aria-label="Staging area">
+        <div class="staging" id="staging-zone" aria-label="Staging area">
           Staging
           <div class="load one" data-load-id="1" aria-label="350 pound load"><span class="load-label">350 lb</span></div>
           <div class="load two" data-load-id="2" aria-label="340 pound load"><span class="load-label">340 lb</span></div>
@@ -776,9 +821,13 @@
         </div>
         <div class="cable" aria-hidden="true"></div>
         <div class="hook" aria-label="Crane hook"></div>
+        <div class="attached-load" id="attached-load" aria-label="Attached load"></div>
 
-        <div class="building">
+        <div class="building" id="building-zone">
           <div class="building-label">Building placement</div>
+          <div class="placed-load" id="placed-load-1" style="left: 10%">350 lb</div>
+          <div class="placed-load" id="placed-load-2" style="left: 38%">340 lb</div>
+          <div class="placed-load" id="placed-load-3" style="left: 66%">360 lb</div>
         </div>
       </div>
     </section>
@@ -806,8 +855,9 @@
       <section class="status-card radius-card panel" aria-label="Hook position">
         <span>Hook position</span>
         <div class="position-grid">
-          <div class="position-readout">Radius<strong id="radius-value">50 ft</strong></div>
-          <div class="position-readout">Height<strong id="height-value">300 ft</strong></div>
+          <div class="position-readout">X<strong id="x-value">-55 ft</strong></div>
+          <div class="position-readout">Y<strong id="y-value">0 ft</strong></div>
+          <div class="position-readout">Z<strong id="height-value">300 ft</strong></div>
           <div class="position-readout">Angle<strong id="angle-value">0°</strong></div>
         </div>
       </section>
@@ -850,9 +900,9 @@
   <script>
     (() => {
       const state = {
-        radius: 50,
+        radius: 55,
         height: 300,
-        angle: 0,
+        angle: 180,
         attachedLoad: 0,
         attachedLoadId: null,
         deliveries: 0,
@@ -877,7 +927,6 @@
       ];
 
       const keys = new Set();
-      const radiusValue = document.getElementById("radius-value");
       const heightValue = document.getElementById("height-value");
       const capacityValue = document.getElementById("capacity-value");
       const capacityFill = document.getElementById("capacity-fill");
@@ -889,6 +938,11 @@
       const sideCable = document.querySelector(".side-cable");
       const sideHook = document.querySelector(".side-hook");
       const angleValue = document.getElementById("angle-value");
+      const xValue = document.getElementById("x-value");
+      const yValue = document.getElementById("y-value");
+      const attachedLoad = document.getElementById("attached-load");
+      const stagingZone = document.getElementById("staging-zone");
+      const buildingZone = document.getElementById("building-zone");
       const pauseButton = document.querySelector(".pause-button");
       const worksite = document.querySelector(".worksite");
       const deliveryValue = document.getElementById("delivery-value");
@@ -942,28 +996,47 @@
         return (state.attachedLoad / ratedCapacity()) * 100;
       }
 
+      function craneWorldPosition() {
+        const radians = state.angle * Math.PI / 180;
+        return {
+          x: state.radius * Math.cos(radians),
+          y: state.radius * Math.sin(radians)
+        };
+      }
+
+      function mapPosition(worksite, x, y) {
+        const left = Math.max(8, Math.min(92, 50 + (x / 150) * 42));
+        const top = Math.max(18, Math.min(82, 58 - (y / 150) * 35));
+        return {
+          left: `${left}%`,
+          top: `${top}%`
+        };
+      }
+
       function update() {
         const percent = capacityPercent();
-        const angleRadians = state.angle * Math.PI / 180;
-        const worksite = document.querySelector(".worksite");
+        const worksiteHeight = worksite.clientHeight;
+        const position = craneWorldPosition();
+        const mapPositionValue = mapPosition(worksite, position.x, position.y);
+        const hookXPercent = parseFloat(mapPositionValue.left);
+        const hookYPercent = parseFloat(mapPositionValue.top);
         const width = worksite.clientWidth;
-        const radiusRatio = (state.radius - 50) / 100;
-        const baseX = width * 0.14;
-        const swingX = radiusRatio * width * 0.72 + Math.cos(angleRadians) * 12;
-        const hookX = Math.max(width * 0.14, Math.min(width * 0.86, baseX + swingX));
-        const heightRatio = state.height / 300;
-        const hookY = 110 + (1 - heightRatio) * 220;
+        const hookX = width * hookXPercent / 100;
+        const mapHookY = worksiteHeight * hookYPercent / 100;
+        const hookY = mapHookY - (state.height / 300) * worksiteHeight * 0.32;
 
         cable.style.left = `${hookX}px`;
         cable.style.top = "102px";
         cable.style.height = `${Math.max(20, hookY - 102)}px`;
         hook.style.left = `${hookX - 13}px`;
         hook.style.top = `${hookY - 10}px`;
-        jib.style.transform = `skewX(-5deg) rotate(${state.angle * 0.18}deg)`;
+        jib.style.transform = `skewX(-5deg) rotate(${state.angle}deg)`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
+        xValue.textContent = `${Math.round(position.x)} ft`;
+        yValue.textContent = `${Math.round(position.y)} ft`;
 
         const sideRadiusRatio = (state.radius - 50) / 100;
-        const sideCableLeft = 114 + sideRadiusRatio * 58;
+        const sideCableLeft = 114 + (position.x / 150) * 58;
         const sideCableHeight = 72 - (state.height / 300) * 54;
         sideCable.style.left = `${sideCableLeft}px`;
         sideCable.style.top = "29px";
@@ -971,12 +1044,25 @@
         sideHook.style.left = `${sideCableLeft - 6}px`;
         sideHook.style.top = `${29 + Math.max(18, sideCableHeight)}px`;
 
-        radiusValue.textContent = `${Math.round(state.radius)} ft`;
         heightValue.textContent = `${Math.round(state.height)} ft`;
         capacityValue.textContent = `${percent.toFixed(1)}%`;
         capacityFill.style.width = `${Math.min(percent, 100)}%`;
         capacityCard.classList.toggle("warning", percent >= 90 && percent < 100);
         capacityCard.classList.toggle("tip", percent >= 100);
+        stagingZone.style.left = `${50 + (-55 / 150) * 42}%`;
+        stagingZone.style.top = `${58}%`;
+        buildingZone.style.left = `${50 + (70 / 150) * 42}%`;
+        buildingZone.style.top = `${58}%`;
+        stagingZone.style.bottom = "auto";
+        stagingZone.style.transform = "translate(-50%, -50%)";
+        buildingZone.style.bottom = "auto";
+        buildingZone.style.transform = "translate(-50%, -50%)";
+        buildingZone.style.right = "auto";
+
+        attachedLoad.classList.toggle("visible", state.attachedLoadId !== null);
+        attachedLoad.textContent = state.attachedLoad ? `${state.attachedLoad} lb` : "";
+        attachedLoad.style.left = `${hookX}px`;
+        attachedLoad.style.top = `${hookY + 18}px`;
 
         if (percent >= 100) {
           capacityNote.textContent = "Tip danger - crane capacity exceeded";
@@ -991,11 +1077,17 @@
       }
 
       function inStagingZone() {
-        return state.radius >= 50 && state.radius <= 60 && state.height <= 80;
+        const position = craneWorldPosition();
+        return position.x >= -75 && position.x <= -45 &&
+          position.y >= -20 && position.y <= 20 &&
+          state.height <= 80;
       }
 
       function inBuildingZone() {
-        return state.radius >= 65 && state.radius <= 75 && state.height <= 80;
+        const position = craneWorldPosition();
+        return position.x >= 45 && position.x <= 85 &&
+          position.y >= -20 && position.y <= 20 &&
+          state.height <= 80;
       }
 
       function toggleLoad() {
@@ -1015,6 +1107,7 @@
           state.score += 100;
           deliveryValue.textContent = `${state.deliveries} / 3`;
           roundNote.textContent = `Load ${loadId} delivered successfully.`;
+          document.getElementById(`placed-load-${state.deliveries}`).classList.add("visible");
           updateScoreDisplays();
           update();
           if (state.deliveries === 3) {
@@ -1064,9 +1157,9 @@
       }
 
       function reset() {
-        state.radius = 50;
+        state.radius = 55;
         state.height = 300;
-        state.angle = 0;
+        state.angle = 180;
         state.attachedLoad = 0;
         state.attachedLoadId = null;
         state.deliveries = 0;
@@ -1083,6 +1176,7 @@
           loads[id].collected = false;
           document.querySelector(`[data-load-id="${id}"]`)?.classList.remove("hidden-load");
         });
+        document.querySelectorAll(".placed-load").forEach(load => load.classList.remove("visible"));
         pauseButton.textContent = "Pause";
         pauseButton.setAttribute("aria-label", "Pause round");
         updateScoreDisplays();

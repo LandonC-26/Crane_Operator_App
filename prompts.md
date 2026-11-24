@@ -68,3 +68,8 @@ Store project prompts here.
 - **Asked:** Run the website and complete it, move the staging and building areas closer, label loads with weights, and make the timer count down live.
 - **Changed:** Moved staging and building visually closer to the crane, mapped radius zones to staging and building positions, added visible 350 lb, 340 lb, and 360 lb load labels, and updated the timer display every frame. Browser testing completed all three deliveries and opened the win dialog.
 - **Worked:** Yes; the timer counted down, all loads delivered successfully, and the final score was 1970 points.
+
+### Request 14
+- **Asked:** Make the crane, load, staging, and building displays accurately reflect the shared X/Y position instead of independent estimates.
+- **Changed:** Added a shared crane X/Y/Z model based on radius and angle, synchronized the map hook and crane jib with X/Y, synchronized the side view with radius and height, moved staging and building to shared map coordinates, added X/Y/Z/angle readouts, and made attached loads follow the hook. Delivered loads now remain labeled on the building.
+- **Worked:** Yes; browser testing delivered all three loads and showed the win dialog with accurate X/Y/Z and angle readouts.
