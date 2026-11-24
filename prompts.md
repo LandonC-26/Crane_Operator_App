@@ -38,3 +38,8 @@ Store project prompts here.
 - **Asked:** Execute Phase 1 by building the static page-layout mockup.
 - **Changed:** Replaced the placeholder `index.html` with a responsive desktop/mobile mockup containing the crane worksite, staging area, building, side view, load chart, timer, score, capacity panel, delivery status, and control bar.
 - **Worked:** Yes; layout was added without implementing gameplay.
+
+### Request 8
+- **Asked:** Execute Phase 2 by adding crane movement and live visual feedback.
+- **Changed:** Added held-key and touch controls for trolley, hook height, and crane rotation; enforced radius and height limits; synchronized the map and side-view hook positions; added live radius, height, and capacity status; and added normal, 90% warning, and 100% tip feedback. Added a temporary F/Space demo-load toggle for testing capacity states.
+- **Worked:** Yes; the app served locally and the implementation was committed.

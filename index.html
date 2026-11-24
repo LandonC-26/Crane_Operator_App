@@ -64,7 +64,7 @@
     }
 
     .status-stack {
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: repeat(4, auto);
     }
 
     .load-chart {
@@ -391,6 +391,31 @@
       font-size: 12px;
     }
 
+    .radius-card {
+      min-height: 112px;
+    }
+
+    .position-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .position-readout {
+      padding: 7px;
+      border-radius: 6px;
+      background: #f2f6f7;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .position-readout strong {
+      display: block;
+      margin: 2px 0 0;
+      font-size: 17px;
+    }
+
     .round-card {
       min-height: 165px;
     }
@@ -442,6 +467,44 @@
       font-weight: 800;
     }
 
+    .key,
+    .pause-button {
+      touch-action: none;
+    }
+
+    button.key {
+      cursor: pointer;
+    }
+
+    button.key:focus-visible,
+    .pause-button:focus-visible {
+      outline: 3px solid #2979ff;
+      outline-offset: 3px;
+    }
+
+    .capacity-card.warning {
+      border-color: #d89216;
+      box-shadow: 0 0 0 2px rgba(216, 146, 22, 0.18);
+    }
+
+    .capacity-card.warning .capacity-fill {
+      background: #d89216;
+    }
+
+    .capacity-card.tip {
+      border-color: #bd2c2c;
+      box-shadow: 0 0 0 2px rgba(189, 44, 44, 0.18);
+    }
+
+    .capacity-card.tip .capacity-fill {
+      background: #bd2c2c;
+    }
+
+    .side-cable,
+    .side-hook {
+      transition: left 80ms linear, top 80ms linear, height 80ms linear;
+    }
+
     @media (max-width: 980px) {
       .app {
         grid-template-columns: 150px minmax(380px, 1fr);
@@ -450,7 +513,7 @@
       .status-stack {
         grid-column: 1 / -1;
         grid-row: 2;
-        grid-template-columns: 150px 150px 1fr;
+        grid-template-columns: repeat(4, minmax(130px, 1fr));
         grid-template-rows: auto;
       }
 
@@ -669,11 +732,19 @@
 
       <section class="status-card capacity-card panel" aria-labelledby="capacity-title">
         <span id="capacity-title">Capacity</span>
-        <strong>0%</strong>
+        <strong id="capacity-value">0%</strong>
         <div class="capacity-track" aria-hidden="true">
-          <div class="capacity-fill"></div>
+          <div class="capacity-fill" id="capacity-fill"></div>
         </div>
-        <div class="capacity-note">Normal - no load attached</div>
+        <div class="capacity-note" id="capacity-note" aria-live="polite">Normal - no load attached</div>
+      </section>
+
+      <section class="status-card radius-card panel" aria-label="Hook position">
+        <span>Hook position</span>
+        <div class="position-grid">
+          <div class="position-readout">Radius<strong id="radius-value">50 ft</strong></div>
+          <div class="position-readout">Height<strong id="height-value">300 ft</strong></div>
+        </div>
       </section>
 
       <section class="status-card round-card panel" aria-label="Round information">
@@ -687,16 +758,206 @@
       <div>
         <h2 id="controls-title">Controls</h2>
         <div class="control-grid" aria-label="Keyboard and touch controls">
-          <div class="key">A / D<small>Trolley</small></div>
-          <div class="key">W / S<small>Hook height</small></div>
-          <div class="key">Q / E<small>Rotate</small></div>
-          <div class="key">F / Space<small>Pick up or drop</small></div>
-          <div class="key">P<small>Pause</small></div>
-          <div class="key">R<small>Restart</small></div>
+          <button class="key" type="button" data-action="left">A / Left<small>Trolley left</small></button>
+          <button class="key" type="button" data-action="right">D / Right<small>Trolley right</small></button>
+          <button class="key" type="button" data-action="down">S / Down<small>Lower hook</small></button>
+          <button class="key" type="button" data-action="up">W / Up<small>Raise hook</small></button>
+          <button class="key" type="button" data-action="rotate-left">Q<small>Rotate left</small></button>
+          <button class="key" type="button" data-action="rotate-right">E<small>Rotate right</small></button>
+          <button class="key" type="button" data-action="load">F / Space<small>Toggle demo load</small></button>
         </div>
       </div>
-      <button class="pause-button" type="button" aria-label="Pause round">Pause</button>
+      <button class="pause-button" type="button" data-action="pause" aria-label="Pause round">Pause</button>
     </section>
   </main>
+  <script>
+    (() => {
+      const state = {
+        radius: 50,
+        height: 300,
+        angle: 0,
+        attachedLoad: 0,
+        paused: false
+      };
+
+      const chart = [
+        { radius: 50, capacity: 400 },
+        { radius: 75, capacity: 375 },
+        { radius: 100, capacity: 350 },
+        { radius: 125, capacity: 325 },
+        { radius: 150, capacity: 300 }
+      ];
+
+      const keys = new Set();
+      const radiusValue = document.getElementById("radius-value");
+      const heightValue = document.getElementById("height-value");
+      const capacityValue = document.getElementById("capacity-value");
+      const capacityFill = document.getElementById("capacity-fill");
+      const capacityNote = document.getElementById("capacity-note");
+      const capacityCard = document.querySelector(".capacity-card");
+      const cable = document.querySelector(".cable");
+      const hook = document.querySelector(".hook");
+      const sideCable = document.querySelector(".side-cable");
+      const sideHook = document.querySelector(".side-hook");
+      const pauseButton = document.querySelector(".pause-button");
+
+      function ratedCapacity() {
+        const band = [...chart].reverse().find(item => state.radius >= item.radius);
+        return band ? band.capacity : chart[0].capacity;
+      }
+
+      function capacityPercent() {
+        if (!state.attachedLoad) return 0;
+        return (state.attachedLoad / ratedCapacity()) * 100;
+      }
+
+      function update() {
+        const percent = capacityPercent();
+        const angleRadians = state.angle * Math.PI / 180;
+        const worksite = document.querySelector(".worksite");
+        const width = worksite.clientWidth;
+        const radiusRatio = (state.radius - 50) / 100;
+        const baseX = width * 0.5;
+        const swingX = Math.cos(angleRadians) * radiusRatio * width * 0.3;
+        const hookX = Math.max(width * 0.14, Math.min(width * 0.86, baseX + swingX));
+        const heightRatio = state.height / 300;
+        const hookY = 110 + (1 - heightRatio) * 220;
+
+        cable.style.left = `${hookX}px`;
+        cable.style.top = "102px";
+        cable.style.height = `${Math.max(20, hookY - 102)}px`;
+        hook.style.left = `${hookX - 13}px`;
+        hook.style.top = `${hookY - 10}px`;
+
+        const sideRadiusRatio = (state.radius - 50) / 100;
+        const sideCableLeft = 114 + sideRadiusRatio * 58;
+        const sideCableHeight = 72 - (state.height / 300) * 54;
+        sideCable.style.left = `${sideCableLeft}px`;
+        sideCable.style.top = "29px";
+        sideCable.style.height = `${Math.max(18, sideCableHeight)}px`;
+        sideHook.style.left = `${sideCableLeft - 6}px`;
+        sideHook.style.top = `${29 + Math.max(18, sideCableHeight)}px`;
+
+        radiusValue.textContent = `${Math.round(state.radius)} ft`;
+        heightValue.textContent = `${Math.round(state.height)} ft`;
+        capacityValue.textContent = `${percent.toFixed(1)}%`;
+        capacityFill.style.width = `${Math.min(percent, 100)}%`;
+        capacityCard.classList.toggle("warning", percent >= 90 && percent < 100);
+        capacityCard.classList.toggle("tip", percent >= 100);
+
+        if (percent >= 100) {
+          capacityNote.textContent = "Tip danger - crane capacity exceeded";
+        } else if (percent >= 90) {
+          capacityNote.textContent = "Warning - capacity at 90% or more";
+        } else if (state.attachedLoad) {
+          capacityNote.textContent = `Normal - ${state.attachedLoad} lb load attached`;
+        } else {
+          capacityNote.textContent = "Normal - no load attached";
+        }
+      }
+
+      function toggleDemoLoad() {
+        state.attachedLoad = state.attachedLoad ? 0 : 360;
+        update();
+      }
+
+      function reset() {
+        state.radius = 50;
+        state.height = 300;
+        state.angle = 0;
+        state.attachedLoad = 0;
+        state.paused = false;
+        keys.clear();
+        pauseButton.textContent = "Pause";
+        pauseButton.setAttribute("aria-label", "Pause round");
+        update();
+      }
+
+      function togglePause() {
+        state.paused = !state.paused;
+        keys.clear();
+        pauseButton.textContent = state.paused ? "Resume" : "Pause";
+        pauseButton.setAttribute("aria-label", state.paused ? "Resume round" : "Pause round");
+      }
+
+      const keyActions = {
+        ArrowLeft: "left",
+        a: "left",
+        A: "left",
+        ArrowRight: "right",
+        d: "right",
+        D: "right",
+        ArrowUp: "up",
+        w: "up",
+        W: "up",
+        ArrowDown: "down",
+        s: "down",
+        S: "down",
+        q: "rotate-left",
+        Q: "rotate-left",
+        e: "rotate-right",
+        E: "rotate-right"
+      };
+
+      window.addEventListener("keydown", event => {
+        if (event.repeat && ["f", "F", " ", "p", "P", "r", "R"].includes(event.key)) return;
+
+        const action = keyActions[event.key];
+        if (action) {
+          event.preventDefault();
+          keys.add(action);
+        } else if (event.key === "f" || event.key === "F" || event.key === " ") {
+          event.preventDefault();
+          toggleDemoLoad();
+        } else if (event.key === "p" || event.key === "P") {
+          event.preventDefault();
+          togglePause();
+        } else if (event.key === "r" || event.key === "R") {
+          event.preventDefault();
+          reset();
+        }
+      });
+
+      window.addEventListener("keyup", event => {
+        const action = keyActions[event.key];
+        if (action) keys.delete(action);
+      });
+
+      document.querySelectorAll("[data-action]").forEach(button => {
+        const action = button.dataset.action;
+        button.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          if (action === "load") toggleDemoLoad();
+          else if (action === "pause") togglePause();
+          else keys.add(action);
+        });
+        button.addEventListener("pointerup", () => keys.delete(action));
+        button.addEventListener("pointerleave", () => keys.delete(action));
+        button.addEventListener("pointercancel", () => keys.delete(action));
+      });
+
+      let previousTime = performance.now();
+      function animate(now) {
+        const elapsed = Math.min((now - previousTime) / 1000, 0.05);
+        previousTime = now;
+
+        if (!state.paused) {
+          if (keys.has("left")) state.radius = Math.max(50, state.radius - 20 * elapsed);
+          if (keys.has("right")) state.radius = Math.min(150, state.radius + 20 * elapsed);
+          if (keys.has("down")) state.height = Math.max(0, state.height - 15 * elapsed);
+          if (keys.has("up")) state.height = Math.min(300, state.height + 15 * elapsed);
+          if (keys.has("rotate-left")) state.angle = (state.angle - 30 * elapsed + 360) % 360;
+          if (keys.has("rotate-right")) state.angle = (state.angle + 30 * elapsed) % 360;
+          update();
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener("resize", update);
+      update();
+      requestAnimationFrame(animate);
+    })();
+  </script>
 </body>
 </html>
