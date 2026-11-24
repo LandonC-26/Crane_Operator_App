@@ -43,3 +43,8 @@ Store project prompts here.
 - **Asked:** Execute Phase 2 by adding crane movement and live visual feedback.
 - **Changed:** Added held-key and touch controls for trolley, hook height, and crane rotation; enforced radius and height limits; synchronized the map and side-view hook positions; added live radius, height, and capacity status; and added normal, 90% warning, and 100% tip feedback. Added a temporary F/Space demo-load toggle for testing capacity states.
 - **Worked:** Yes; the app served locally and the implementation was committed.
+
+### Request 9
+- **Asked:** Explain in simple terms what went wrong while implementing Phase 2.
+- **Changed:** Reviewed the Phase 2 work and prompt history. No app code was changed; prepared an explanation of patch-context, browser-validation, and verification difficulties.
+- **Worked:** Yes.
