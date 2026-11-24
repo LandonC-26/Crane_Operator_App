@@ -63,3 +63,8 @@ Store project prompts here.
 - **Asked:** Make the crane controls faster and fix inability to rotate the crane.
 - **Changed:** Increased trolley, hook, and rotation speeds; added Q/J and E/L keyboard rotation aliases; clarified rotate touch buttons; added a live angle readout; and visually rotated the crane jib and hook position. Verification and commit are pending.
 - **Worked:** Yes; source checks passed before the local commit.
+
+### Request 13
+- **Asked:** Run the website and complete it, move the staging and building areas closer, label loads with weights, and make the timer count down live.
+- **Changed:** Moved staging and building visually closer to the crane, mapped radius zones to staging and building positions, added visible 350 lb, 340 lb, and 360 lb load labels, and updated the timer display every frame. Browser testing completed all three deliveries and opened the win dialog.
+- **Worked:** Yes; the timer counted down, all loads delivered successfully, and the final score was 1970 points.

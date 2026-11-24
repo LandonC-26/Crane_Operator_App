@@ -281,7 +281,7 @@
 
     .staging {
       position: absolute;
-      left: 18px;
+      left: 15%;
       bottom: 36px;
       width: 150px;
       height: 105px;
@@ -297,7 +297,7 @@
 
     .building {
       position: absolute;
-      right: 20px;
+      right: 15%;
       bottom: 36px;
       z-index: 2;
       width: 180px;
@@ -343,6 +343,17 @@
       border: 2px solid #4e4e4e;
       border-bottom: 0;
       transform: translateX(-50%);
+    }
+
+    .load-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #2d2117;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .load.one { left: 26px; }
@@ -754,9 +765,9 @@
 
         <div class="staging" aria-label="Staging area">
           Staging
-          <div class="load one" data-load-id="1" aria-label="350 pound load"></div>
-          <div class="load two" data-load-id="2" aria-label="400 pound load"></div>
-          <div class="load three" data-load-id="3" aria-label="360 pound load"></div>
+          <div class="load one" data-load-id="1" aria-label="350 pound load"><span class="load-label">350 lb</span></div>
+          <div class="load two" data-load-id="2" aria-label="340 pound load"><span class="load-label">340 lb</span></div>
+          <div class="load three" data-load-id="3" aria-label="360 pound load"><span class="load-label">360 lb</span></div>
         </div>
 
         <div class="tower" aria-label="Tower crane">
@@ -853,7 +864,7 @@
 
       const loads = {
         1: { weight: 350, collected: false },
-        2: { weight: 400, collected: false },
+        2: { weight: 340, collected: false },
         3: { weight: 360, collected: false }
       };
 
@@ -937,8 +948,8 @@
         const worksite = document.querySelector(".worksite");
         const width = worksite.clientWidth;
         const radiusRatio = (state.radius - 50) / 100;
-        const baseX = width * 0.5;
-        const swingX = Math.cos(angleRadians) * radiusRatio * width * 0.3;
+        const baseX = width * 0.14;
+        const swingX = radiusRatio * width * 0.72 + Math.cos(angleRadians) * 12;
         const hookX = Math.max(width * 0.14, Math.min(width * 0.86, baseX + swingX));
         const heightRatio = state.height / 300;
         const hookY = 110 + (1 - heightRatio) * 220;
@@ -980,11 +991,11 @@
       }
 
       function inStagingZone() {
-        return state.radius <= 80 && state.height <= 80;
+        return state.radius >= 50 && state.radius <= 60 && state.height <= 80;
       }
 
       function inBuildingZone() {
-        return state.radius >= 80 && state.radius <= 110 && state.height <= 80;
+        return state.radius >= 65 && state.radius <= 75 && state.height <= 80;
       }
 
       function toggleLoad() {
@@ -1171,6 +1182,7 @@
           if (state.remainingSeconds <= 0) {
             endRoundByTime();
           }
+          updateScoreDisplays();
           if (keys.has("left")) state.radius = Math.max(50, state.radius - 35 * elapsed);
           if (keys.has("right")) state.radius = Math.min(150, state.radius + 35 * elapsed);
           if (keys.has("down")) state.height = Math.max(0, state.height - 25 * elapsed);
