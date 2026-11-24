@@ -91,3 +91,8 @@ Store project prompts here.
 - **Changed:** Added visible jib end hardware, trolley wheels and hanging block, a clearer hoist block and J hook, and aligned the cable and hook directly under the trolley while keeping the crane layout and gameplay unchanged. Verification and commit are pending.
 - **Changed:** Browser screenshot and geometry verification confirmed the trolley, cable, hoist block, hook, and crane assembly remain visually connected.
 - **Worked:** Yes; the focused connection improvements were verified before commit.
+
+### Request 18
+- **Asked:** Complete a full browser run-through and test every app function for proper use.
+- **Changed:** Audited keyboard and touch controls, pause/resume, restart, movement limits, staging pickup, building drop, all three deliveries, scoring, timer, 90% warning, 100% tipping, and restart after tip. No app code was changed; prepared a malfunction report and implementation recommendations.
+- **Worked:** Yes; the core delivery run and edge-state tests completed successfully.
