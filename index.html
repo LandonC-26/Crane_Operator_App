@@ -245,6 +245,17 @@
       transform: skewX(-5deg);
     }
 
+    .jib-end {
+      position: absolute;
+      right: -7px;
+      top: -5px;
+      width: 12px;
+      height: 16px;
+      border: 3px solid var(--steel-dark);
+      border-radius: 2px;
+      background: #657c8a;
+    }
+
     .jib::after {
       content: "";
       position: absolute;
@@ -260,23 +271,36 @@
     .trolley {
       position: absolute;
       z-index: 5;
-      top: -2px;
+      top: -7px;
       left: 0;
-      width: 22px;
-      height: 16px;
+      width: 30px;
+      height: 22px;
       border: 3px solid var(--steel-dark);
       border-radius: 3px;
       background: var(--yellow);
       transform: translateX(-50%);
     }
 
+    .trolley::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      bottom: -7px;
+      height: 5px;
+      border: 2px solid var(--steel-dark);
+      border-top: 0;
+      border-radius: 0 0 5px 5px;
+      background: #657c8a;
+    }
+
     .trolley::after {
       content: "";
       position: absolute;
       left: 50%;
-      top: 13px;
-      width: 2px;
-      height: 12px;
+      top: 17px;
+      width: 3px;
+      height: 14px;
       transform: translateX(-50%);
       background: var(--ink);
     }
@@ -295,24 +319,48 @@
 
     .cable {
       position: absolute;
-      z-index: 4;
+      z-index: 6;
       left: 72%;
       top: 48px;
-      width: 2px;
+      width: 3px;
       height: 132px;
       background: #1d2b3b;
+      box-shadow: 1px 0 #657c8a;
+      border-radius: 2px;
     }
 
     .hook {
       position: absolute;
-      z-index: 5;
+      z-index: 7;
       left: calc(72% - 13px);
       top: 229px;
-      width: 28px;
-      height: 22px;
-      border: 4px solid #1d2b3b;
+      width: 34px;
+      height: 28px;
+    }
+
+    .hook::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: -5px;
+      width: 18px;
+      height: 12px;
+      border: 3px solid #26384a;
+      border-radius: 3px;
+      background: #657c8a;
+    }
+
+    .hook::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      width: 14px;
+      height: 17px;
+      border: 4px solid #26384a;
       border-top: 0;
-      border-radius: 0 0 16px 16px;
+      border-radius: 0 0 12px 12px;
+      background: transparent;
     }
 
     .staging {
@@ -855,6 +903,7 @@
           <div class="mast"></div>
           <div class="jib">
             <div class="trolley" id="crane-trolley"></div>
+            <div class="jib-end"></div>
           </div>
           <div class="tower-base"></div>
         </div>
@@ -1064,18 +1113,18 @@
         const hookX = width * hookXPercent / 100;
         const mapHookY = worksiteHeight * hookYPercent / 100;
         const hookY = mapHookY - (state.height / 300) * worksiteHeight * 0.32;
-        const trolleyOffset = ((position.x + 150) / 300) * 298;
-        trolley.style.left = `${Math.max(8, Math.min(290, trolleyOffset))}px`;
-
         const worksiteRect = worksite.getBoundingClientRect();
+          const towerRect = document.querySelector(".tower").getBoundingClientRect();
+          const trolleyRelativeToJib = Math.max(8, Math.min(290, hookX - (towerRect.left - worksiteRect.left) + 118));
+          trolley.style.left = `${trolleyRelativeToJib}px`;
         const trolleyRect = trolley.getBoundingClientRect();
         const trolleyX = trolleyRect.left - worksiteRect.left + trolleyRect.width / 2;
         const cableTop = trolleyRect.bottom - worksiteRect.top - 4;
         cable.style.left = `${trolleyX}px`;
         cable.style.top = `${cableTop}px`;
         cable.style.height = `${Math.max(20, hookY - cableTop)}px`;
-        hook.style.left = `${hookX - 13}px`;
-        hook.style.top = `${hookY - 10}px`;
+        hook.style.left = `${trolleyX - 17}px`;
+        hook.style.top = `${hookY - 14}px`;
         jib.style.transform = `skewX(-5deg) rotate(${state.angle}deg)`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
@@ -1107,7 +1156,7 @@
 
         attachedLoad.classList.toggle("visible", state.attachedLoadId !== null);
         attachedLoad.textContent = state.attachedLoad ? `${state.attachedLoad} lb` : "";
-        attachedLoad.style.left = `${hookX}px`;
+        attachedLoad.style.left = `${trolleyX}px`;
         attachedLoad.style.top = `${hookY + 18}px`;
 
         if (percent >= 100) {

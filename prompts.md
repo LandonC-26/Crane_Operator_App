@@ -85,3 +85,9 @@ Store project prompts here.
 - **Changed:** Moved the yellow trolley inside the jib, added a trolley hanging-point detail, and positioned the cable dynamically from the trolley's actual bounding position down to the hook. Browser verification and local commit are pending.
 - **Changed:** Browser geometry verification confirmed the cable starts within 3 pixels of the trolley center and extends from its lower edge.
 - **Worked:** Yes; the trolley-to-cable connection was verified before commit.
+
+### Request 17
+- **Asked:** Stop broad crane redesign and improve only the bucket, wire, trolley, and crane connections for seamless play.
+- **Changed:** Added visible jib end hardware, trolley wheels and hanging block, a clearer hoist block and J hook, and aligned the cable and hook directly under the trolley while keeping the crane layout and gameplay unchanged. Verification and commit are pending.
+- **Changed:** Browser screenshot and geometry verification confirmed the trolley, cable, hoist block, hook, and crane assembly remain visually connected.
+- **Worked:** Yes; the focused connection improvements were verified before commit.
