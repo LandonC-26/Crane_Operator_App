@@ -3,8 +3,700 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crane Operator App</title>
+  <title>Crane Operator 1</title>
+  <style>
+    :root {
+      --ink: #17243a;
+      --paper: #edf3f5;
+      --steel: #536579;
+      --steel-dark: #34495e;
+      --yellow: #f2bf26;
+      --orange: #dd7d25;
+      --green: #43a047;
+      --warning: #d89216;
+      --panel: #ffffff;
+      --line: #cbd6dc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.9), transparent 30rem),
+        var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 180px minmax(420px, 1fr) 190px;
+      grid-template-rows: minmax(460px, 1fr) 110px;
+      gap: 12px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(23, 36, 58, 0.07);
+    }
+
+    .left-stack,
+    .status-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .left-stack {
+      grid-template-rows: 240px 1fr;
+    }
+
+    .status-stack {
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .load-chart {
+      padding: 12px;
+    }
+
+    .load-chart h2,
+    .controls h2,
+    .side-view h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 7px 4px;
+      border-bottom: 1px solid #e5ebee;
+      text-align: center;
+    }
+
+    th {
+      color: #667786;
+      font-size: 11px;
+    }
+
+    .side-view {
+      min-height: 208px;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .side-drawing {
+      position: relative;
+      height: 190px;
+      overflow: hidden;
+      background: linear-gradient(#eaf3f6 0 64%, #c9d1bf 64%);
+      border: 1px solid #d8e0e4;
+      border-radius: 6px;
+    }
+
+    .side-ground {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 36%;
+      background: #9ca995;
+      border-top: 3px solid #7f9275;
+    }
+
+    .side-crane {
+      position: absolute;
+      left: 22px;
+      bottom: 42px;
+      width: 54px;
+      height: 112px;
+      border: 7px solid var(--steel);
+      border-top: 0;
+      background:
+        repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.5) 12px 14px),
+        var(--yellow);
+      clip-path: polygon(35% 100%, 35% 18%, 65% 18%, 65% 100%);
+    }
+
+    .side-boom {
+      position: absolute;
+      left: 48px;
+      top: 22px;
+      width: 110px;
+      height: 8px;
+      background: var(--yellow);
+      border: 2px solid var(--steel-dark);
+      transform-origin: left center;
+      transform: rotate(-2deg);
+    }
+
+    .side-cable {
+      position: absolute;
+      left: 114px;
+      top: 29px;
+      width: 2px;
+      height: 72px;
+      background: var(--ink);
+    }
+
+    .side-hook {
+      position: absolute;
+      left: 108px;
+      top: 98px;
+      width: 14px;
+      height: 13px;
+      border: 3px solid var(--ink);
+      border-top: 0;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .main-column {
+      display: grid;
+      grid-template-rows: minmax(460px, 1fr);
+      min-width: 0;
+    }
+
+    .worksite {
+      position: relative;
+      overflow: hidden;
+      min-height: 460px;
+      background:
+        linear-gradient(90deg, transparent 49.8%, rgba(83,101,121,.12) 50%, transparent 50.2%),
+        linear-gradient(#dfeaec 0 58%, #b7c3ac 58%);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 8px rgba(255,255,255,.45);
+    }
+
+    .worksite-title {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      z-index: 3;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .radius-ring {
+      position: absolute;
+      left: 50%;
+      bottom: -34%;
+      width: 56%;
+      aspect-ratio: 1;
+      border: 1px dashed rgba(83, 101, 121, 0.42);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    .radius-ring.r2 { width: 68%; bottom: -42%; }
+    .radius-ring.r3 { width: 82%; bottom: -50%; }
+
+    .tower {
+      position: absolute;
+      left: 50%;
+      bottom: 42px;
+      width: 62px;
+      height: 260px;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    .mast {
+      position: absolute;
+      left: 19px;
+      bottom: 0;
+      width: 24px;
+      height: 210px;
+      background:
+        repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.65) 12px 15px),
+        var(--yellow);
+      border: 4px solid var(--steel-dark);
+    }
+
+    .jib {
+      position: absolute;
+      top: 38px;
+      left: -118px;
+      width: 298px;
+      height: 12px;
+      background: var(--yellow);
+      border: 3px solid var(--steel-dark);
+      transform: skewX(-5deg);
+    }
+
+    .jib::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: -24px;
+      height: 24px;
+      background:
+        linear-gradient(35deg, transparent 48%, var(--steel-dark) 49%, var(--steel-dark) 51%, transparent 52%);
+      background-size: 24px 24px;
+    }
+
+    .cable {
+      position: absolute;
+      z-index: 4;
+      left: 72%;
+      top: 102px;
+      width: 2px;
+      height: 132px;
+      background: #1d2b3b;
+    }
+
+    .hook {
+      position: absolute;
+      z-index: 5;
+      left: calc(72% - 13px);
+      top: 229px;
+      width: 28px;
+      height: 22px;
+      border: 4px solid #1d2b3b;
+      border-top: 0;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .staging {
+      position: absolute;
+      left: 18px;
+      bottom: 36px;
+      width: 150px;
+      height: 105px;
+      z-index: 2;
+      border: 2px dashed #7b8d6b;
+      border-radius: 6px;
+      background: rgba(231, 238, 218, 0.75);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      padding-top: 8px;
+    }
+
+    .building {
+      position: absolute;
+      right: 20px;
+      bottom: 36px;
+      z-index: 2;
+      width: 180px;
+      height: 132px;
+      border: 3px solid #73818a;
+      background:
+        linear-gradient(90deg, transparent 32%, #73818a 33%, #73818a 35%, transparent 36%),
+        repeating-linear-gradient(0deg, #d8dee1 0 28px, #73818a 29px 32px);
+      box-shadow: inset 0 0 0 8px rgba(255,255,255,.42);
+    }
+
+    .building-label,
+    .staging-label {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      padding: 4px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.88);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .load {
+      position: absolute;
+      z-index: 3;
+      bottom: 12px;
+      width: 34px;
+      height: 28px;
+      border: 3px solid #6b4d31;
+      border-radius: 4px;
+      background: #c89b69;
+    }
+
+    .load::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -11px;
+      width: 16px;
+      height: 8px;
+      border: 2px solid #4e4e4e;
+      border-bottom: 0;
+      transform: translateX(-50%);
+    }
+
+    .load.one { left: 26px; }
+    .load.two { left: 67px; background: #d6b07c; }
+    .load.three { left: 108px; background: #b98a56; }
+
+    .status-card {
+      padding: 12px;
+    }
+
+    .status-card strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 28px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-card span {
+      color: #687b8b;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .capacity-card {
+      min-height: 134px;
+    }
+
+    .capacity-track {
+      height: 18px;
+      margin: 10px 0 8px;
+      border: 1px solid #bdc9cf;
+      border-radius: 9px;
+      background: linear-gradient(90deg, #67b76b 0 89.9%, #f2bf26 90%, #f2bf26 100%);
+      overflow: hidden;
+    }
+
+    .capacity-fill {
+      width: 0;
+      height: 100%;
+      background: #69a44f;
+    }
+
+    .capacity-note {
+      color: #5f716f;
+      font-size: 12px;
+    }
+
+    .round-card {
+      min-height: 165px;
+    }
+
+    .controls {
+      grid-column: 1 / -1;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .control-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .key {
+      min-width: 74px;
+      min-height: 38px;
+      padding: 7px 9px;
+      border: 1px solid #bac8ce;
+      border-bottom-width: 3px;
+      border-radius: 7px;
+      background: #f8fafb;
+      color: var(--ink);
+      text-align: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .key small {
+      display: block;
+      margin-top: 2px;
+      color: #71828f;
+      font-size: 10px;
+      font-weight: 400;
+    }
+
+    .pause-button {
+      min-height: 52px;
+      min-width: 92px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--steel-dark);
+      color: white;
+      font-weight: 800;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 150px minmax(380px, 1fr);
+      }
+
+      .status-stack {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        grid-template-columns: 150px 150px 1fr;
+        grid-template-rows: auto;
+      }
+
+      .main-column {
+        grid-column: 2;
+      }
+
+      .controls {
+        grid-row: 3;
+      }
+
+      .app {
+        grid-template-rows: minmax(460px, 1fr) auto 110px;
+      }
+
+      .left-stack {
+        grid-column: 1;
+        grid-row: 1;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .app {
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+        min-height: 100vh;
+      }
+
+      .status-stack {
+        order: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+      }
+
+      .capacity-card {
+        grid-column: 1 / -1;
+        min-height: 104px;
+      }
+
+      .round-card {
+        grid-column: 1 / -1;
+        min-height: 120px;
+      }
+
+      .main-column {
+        order: 2;
+      }
+
+      .worksite {
+        min-height: 390px;
+      }
+
+      .tower {
+        height: 220px;
+      }
+
+      .mast {
+        height: 170px;
+      }
+
+      .jib {
+        left: -96px;
+        width: 250px;
+      }
+
+      .building {
+        width: 132px;
+      }
+
+      .staging {
+        width: 118px;
+      }
+
+      .left-stack {
+        order: 3;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+
+      .load-chart {
+        min-height: 190px;
+      }
+
+      .side-view {
+        min-height: 190px;
+      }
+
+      .controls {
+        order: 4;
+        grid-template-columns: 1fr;
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .key {
+        min-width: 0;
+        min-height: 48px;
+        padding: 8px 4px;
+      }
+
+      .pause-button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .status-card strong {
+        font-size: 22px;
+      }
+
+      .worksite {
+        min-height: 350px;
+      }
+
+      .building {
+        width: 105px;
+      }
+
+      .staging {
+        width: 98px;
+      }
+
+      .load.three {
+        left: 63px;
+      }
+
+      .load.two {
+        display: none;
+      }
+
+      .left-stack {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="app" aria-label="Tower crane game mockup">
+    <aside class="left-stack" aria-label="Crane reference views">
+      <section class="load-chart panel" aria-labelledby="chart-title">
+        <h2 id="chart-title">Load chart</h2>
+        <table>
+          <thead>
+            <tr><th>Radius</th><th>Capacity</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>50 ft</td><td>400 lb</td></tr>
+            <tr><td>75 ft</td><td>375 lb</td></tr>
+            <tr><td>100 ft</td><td>350 lb</td></tr>
+            <tr><td>125 ft</td><td>325 lb</td></tr>
+            <tr><td>150 ft</td><td>300 lb</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="side-view panel" aria-labelledby="side-title">
+        <h2 id="side-title">Side view</h2>
+        <div class="side-drawing" aria-hidden="true">
+          <div class="side-ground"></div>
+          <div class="side-crane"></div>
+          <div class="side-boom"></div>
+          <div class="side-cable"></div>
+          <div class="side-hook"></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="main-column" aria-label="Crane worksite">
+      <div class="worksite">
+        <div class="worksite-title">Construction yard</div>
+        <div class="radius-ring r1" aria-hidden="true"></div>
+        <div class="radius-ring r2" aria-hidden="true"></div>
+        <div class="radius-ring r3" aria-hidden="true"></div>
+
+        <div class="staging" aria-label="Staging area">
+          Staging
+          <div class="load one" aria-hidden="true"></div>
+          <div class="load two" aria-hidden="true"></div>
+          <div class="load three" aria-hidden="true"></div>
+        </div>
+
+        <div class="tower" aria-label="Tower crane">
+          <div class="mast"></div>
+          <div class="jib"></div>
+        </div>
+        <div class="cable" aria-hidden="true"></div>
+        <div class="hook" aria-label="Crane hook"></div>
+
+        <div class="building">
+          <div class="building-label">Building placement</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="status-stack" aria-label="Round status">
+      <section class="status-card panel" aria-label="Time remaining">
+        <span>Time</span>
+        <strong>03:00</strong>
+      </section>
+
+      <section class="status-card panel" aria-label="Score">
+        <span>Score</span>
+        <strong>0000</strong>
+      </section>
+
+      <section class="status-card capacity-card panel" aria-labelledby="capacity-title">
+        <span id="capacity-title">Capacity</span>
+        <strong>0%</strong>
+        <div class="capacity-track" aria-hidden="true">
+          <div class="capacity-fill"></div>
+        </div>
+        <div class="capacity-note">Normal - no load attached</div>
+      </section>
+
+      <section class="status-card round-card panel" aria-label="Round information">
+        <span>Deliveries</span>
+        <strong>0 / 3</strong>
+        <div class="capacity-note">Select a staging load and move it to the building.</div>
+      </section>
+    </aside>
+
+    <section class="controls panel" aria-labelledby="controls-title">
+      <div>
+        <h2 id="controls-title">Controls</h2>
+        <div class="control-grid" aria-label="Keyboard and touch controls">
+          <div class="key">A / D<small>Trolley</small></div>
+          <div class="key">W / S<small>Hook height</small></div>
+          <div class="key">Q / E<small>Rotate</small></div>
+          <div class="key">F / Space<small>Pick up or drop</small></div>
+          <div class="key">P<small>Pause</small></div>
+          <div class="key">R<small>Restart</small></div>
+        </div>
+      </div>
+      <button class="pause-button" type="button" aria-label="Pause round">Pause</button>
+    </section>
+  </main>
 </body>
 </html>

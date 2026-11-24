@@ -33,3 +33,8 @@ Store project prompts here.
 - **Asked:** Read `spec.md` and provide a short overview of the app plus a 3-to-5-stage build plan beginning with a page-layout mockup.
 - **Changed:** Reviewed the specification and prompt log. No app code or specification content was changed; prepared an implementation plan for the mockup and subsequent gameplay stages.
 - **Worked:** Yes.
+
+### Request 7
+- **Asked:** Execute Phase 1 by building the static page-layout mockup.
+- **Changed:** Replaced the placeholder `index.html` with a responsive desktop/mobile mockup containing the crane worksite, staging area, building, side view, load chart, timer, score, capacity panel, delivery status, and control bar.
+- **Worked:** Yes; layout was added without implementing gameplay.
