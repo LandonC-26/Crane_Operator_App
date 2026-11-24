@@ -260,14 +260,25 @@
     .trolley {
       position: absolute;
       z-index: 5;
-      top: 32px;
-      left: -118px;
+      top: -2px;
+      left: 0;
       width: 22px;
       height: 16px;
       border: 3px solid var(--steel-dark);
       border-radius: 3px;
       background: var(--yellow);
       transform: translateX(-50%);
+    }
+
+    .trolley::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 13px;
+      width: 2px;
+      height: 12px;
+      transform: translateX(-50%);
+      background: var(--ink);
     }
 
     .tower-base {
@@ -842,9 +853,10 @@
 
         <div class="tower" aria-label="Tower crane">
           <div class="mast"></div>
-          <div class="jib"></div>
+          <div class="jib">
+            <div class="trolley" id="crane-trolley"></div>
+          </div>
           <div class="tower-base"></div>
-          <div class="trolley" id="crane-trolley"></div>
         </div>
         <div class="cable" aria-hidden="true"></div>
         <div class="hook" aria-label="Crane hook"></div>
@@ -1052,15 +1064,19 @@
         const hookX = width * hookXPercent / 100;
         const mapHookY = worksiteHeight * hookYPercent / 100;
         const hookY = mapHookY - (state.height / 300) * worksiteHeight * 0.32;
+        const trolleyOffset = ((position.x + 150) / 300) * 298;
+        trolley.style.left = `${Math.max(8, Math.min(290, trolleyOffset))}px`;
 
-        cable.style.left = `${hookX}px`;
-        cable.style.top = "48px";
-        cable.style.height = `${Math.max(20, hookY - 48)}px`;
+        const worksiteRect = worksite.getBoundingClientRect();
+        const trolleyRect = trolley.getBoundingClientRect();
+        const trolleyX = trolleyRect.left - worksiteRect.left + trolleyRect.width / 2;
+        const cableTop = trolleyRect.bottom - worksiteRect.top - 4;
+        cable.style.left = `${trolleyX}px`;
+        cable.style.top = `${cableTop}px`;
+        cable.style.height = `${Math.max(20, hookY - cableTop)}px`;
         hook.style.left = `${hookX - 13}px`;
         hook.style.top = `${hookY - 10}px`;
         jib.style.transform = `skewX(-5deg) rotate(${state.angle}deg)`;
-        const trolleyOffset = ((position.x + 150) / 300) * 298 - 118;
-        trolley.style.left = `${Math.max(-118, Math.min(180, trolleyOffset))}px`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
         yValue.textContent = `${Math.round(position.y)} ft`;

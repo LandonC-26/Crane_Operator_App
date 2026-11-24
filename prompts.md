@@ -79,3 +79,9 @@ Store project prompts here.
 - **Changed:** Added Phase 5 clarifications for construction workers, load sliders, crane alignment, and control behavior. Updated the crane base to meet the brown ground section, added a visible trolley and cable connection to the jib, and reduced trolley, hook, and rotation speeds by 15%. Browser verification and commit are pending.
 - **Changed:** Browser testing confirmed the slower controls, crane trolley, cable, and brown ground alignment. A staged load attached successfully and the crane base measured at the brown section boundary.
 - **Worked:** Yes; verified the crane appearance and slowed controls before the local commit.
+
+### Request 16
+- **Asked:** Make the wire visibly and physically connect from the top of the crane to the yellow trolley and crane.
+- **Changed:** Moved the yellow trolley inside the jib, added a trolley hanging-point detail, and positioned the cable dynamically from the trolley's actual bounding position down to the hook. Browser verification and local commit are pending.
+- **Changed:** Browser geometry verification confirmed the cable starts within 3 pixels of the trolley center and extends from its lower edge.
+- **Worked:** Yes; the trolley-to-cable connection was verified before commit.
