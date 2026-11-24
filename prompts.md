@@ -48,3 +48,8 @@ Store project prompts here.
 - **Asked:** Explain in simple terms what went wrong while implementing Phase 2.
 - **Changed:** Reviewed the Phase 2 work and prompt history. No app code was changed; prepared an explanation of patch-context, browser-validation, and verification difficulties.
 - **Worked:** Yes.
+
+### Request 10
+- **Asked:** Execute Phase 3 by adding real load pickup and drop behavior.
+- **Changed:** Replaced the demo-load toggle with three fixed loads, staging and building zone checks, attached-load capacity updates, successful delivery counting, hidden staging loads after pickup, and a local tip-over end panel with restart. The implementation is in place pending verification and commit.
+- **Worked:** Yes; the source changes and Git diff were checked before the local commit.

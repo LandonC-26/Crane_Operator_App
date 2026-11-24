@@ -416,6 +416,53 @@
       font-size: 17px;
     }
 
+    .load.hidden-load {
+      display: none;
+    }
+
+    .end-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(23, 36, 58, 0.72);
+    }
+
+    .end-panel.visible {
+      display: grid;
+    }
+
+    .end-dialog {
+      width: min(420px, 100%);
+      padding: 24px;
+      border-radius: 12px;
+      background: white;
+      text-align: center;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    .end-dialog h2 {
+      margin-top: 0;
+    }
+
+    .worksite.tip-over .tower {
+      transform-origin: bottom center;
+      animation: tip-over 900ms ease-in forwards;
+    }
+
+    @keyframes tip-over {
+      to { transform: translateX(-50%) rotate(18deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .worksite.tip-over .tower {
+        animation: none;
+        transform: translateX(-50%) rotate(18deg);
+      }
+    }
+
     .round-card {
       min-height: 165px;
     }
@@ -701,9 +748,9 @@
 
         <div class="staging" aria-label="Staging area">
           Staging
-          <div class="load one" aria-hidden="true"></div>
-          <div class="load two" aria-hidden="true"></div>
-          <div class="load three" aria-hidden="true"></div>
+          <div class="load one" data-load-id="1" aria-label="350 pound load"></div>
+          <div class="load two" data-load-id="2" aria-label="400 pound load"></div>
+          <div class="load three" data-load-id="3" aria-label="360 pound load"></div>
         </div>
 
         <div class="tower" aria-label="Tower crane">
@@ -749,8 +796,8 @@
 
       <section class="status-card round-card panel" aria-label="Round information">
         <span>Deliveries</span>
-        <strong>0 / 3</strong>
-        <div class="capacity-note">Select a staging load and move it to the building.</div>
+        <strong id="delivery-value">0 / 3</strong>
+        <div class="capacity-note" id="round-note">Select a staging load and move it to the building.</div>
       </section>
     </aside>
 
@@ -764,12 +811,19 @@
           <button class="key" type="button" data-action="up">W / Up<small>Raise hook</small></button>
           <button class="key" type="button" data-action="rotate-left">Q<small>Rotate left</small></button>
           <button class="key" type="button" data-action="rotate-right">E<small>Rotate right</small></button>
-          <button class="key" type="button" data-action="load">F / Space<small>Toggle demo load</small></button>
+          <button class="key" type="button" data-action="load">F / Space<small>Pick up or drop</small></button>
         </div>
       </div>
       <button class="pause-button" type="button" data-action="pause" aria-label="Pause round">Pause</button>
     </section>
   </main>
+  <div class="end-panel" id="end-panel" role="dialog" aria-modal="true" aria-labelledby="end-title">
+    <div class="end-dialog">
+      <h2 id="end-title">Crane tipped</h2>
+      <p id="end-message">The crane reached 100% capacity or more.</p>
+      <button class="pause-button" type="button" id="restart-button">Restart round</button>
+    </div>
+  </div>
   <script>
     (() => {
       const state = {
@@ -777,7 +831,16 @@
         height: 300,
         angle: 0,
         attachedLoad: 0,
-        paused: false
+        attachedLoadId: null,
+        deliveries: 0,
+        paused: false,
+        ended: false
+      };
+
+      const loads = {
+        1: { weight: 350, collected: false },
+        2: { weight: 400, collected: false },
+        3: { weight: 360, collected: false }
       };
 
       const chart = [
@@ -800,6 +863,13 @@
       const sideCable = document.querySelector(".side-cable");
       const sideHook = document.querySelector(".side-hook");
       const pauseButton = document.querySelector(".pause-button");
+      const worksite = document.querySelector(".worksite");
+      const deliveryValue = document.getElementById("delivery-value");
+      const roundNote = document.getElementById("round-note");
+      const endPanel = document.getElementById("end-panel");
+      const endTitle = document.getElementById("end-title");
+      const endMessage = document.getElementById("end-message");
+      const restartButton = document.getElementById("restart-button");
 
       function ratedCapacity() {
         const band = [...chart].reverse().find(item => state.radius >= item.radius);
@@ -847,6 +917,7 @@
 
         if (percent >= 100) {
           capacityNote.textContent = "Tip danger - crane capacity exceeded";
+          if (!state.ended) endRoundByTip();
         } else if (percent >= 90) {
           capacityNote.textContent = "Warning - capacity at 90% or more";
         } else if (state.attachedLoad) {
@@ -856,9 +927,71 @@
         }
       }
 
-      function toggleDemoLoad() {
-        state.attachedLoad = state.attachedLoad ? 0 : 360;
+      function inStagingZone() {
+        return state.radius <= 80 && state.height <= 80;
+      }
+
+      function inBuildingZone() {
+        return state.radius >= 80 && state.radius <= 110 && state.height <= 80;
+      }
+
+      function toggleLoad() {
+        if (state.paused || state.ended) return;
+
+        if (state.attachedLoadId !== null) {
+          if (!inBuildingZone()) {
+            roundNote.textContent = "Move lower into the marked building zone before dropping.";
+            return;
+          }
+
+          const loadId = state.attachedLoadId;
+          loads[loadId].collected = true;
+          state.attachedLoadId = null;
+          state.attachedLoad = 0;
+          state.deliveries += 1;
+          deliveryValue.textContent = `${state.deliveries} / 3`;
+          roundNote.textContent = `Load ${loadId} delivered successfully.`;
+          update();
+          if (state.deliveries === 3) {
+            state.ended = true;
+            state.paused = true;
+            keys.clear();
+            endTitle.textContent = "All loads delivered";
+            endMessage.textContent = "You completed the simplified crane run.";
+            endPanel.classList.add("visible");
+            restartButton.focus();
+          }
+          return;
+        }
+
+        if (!inStagingZone()) {
+          roundNote.textContent = "Lower the hook into the staging zone to pick up a load.";
+          return;
+        }
+
+        const nextLoad = Object.keys(loads)
+          .map(Number)
+          .find(id => !loads[id].collected);
+
+        if (nextLoad === undefined) return;
+
+        loads[nextLoad].collected = false;
+        state.attachedLoadId = nextLoad;
+        state.attachedLoad = loads[nextLoad].weight;
+        document.querySelector(`[data-load-id="${nextLoad}"]`)?.classList.add("hidden-load");
+        roundNote.textContent = `Load ${nextLoad} attached: ${state.attachedLoad} lb.`;
         update();
+      }
+
+      function endRoundByTip() {
+        state.ended = true;
+        state.paused = true;
+        keys.clear();
+        worksite.classList.add("tip-over");
+        endTitle.textContent = "Crane tipped";
+        endMessage.textContent = "The crane reached 100% capacity or more.";
+        endPanel.classList.add("visible");
+        restartButton.focus();
       }
 
       function reset() {
@@ -866,8 +999,19 @@
         state.height = 300;
         state.angle = 0;
         state.attachedLoad = 0;
+        state.attachedLoadId = null;
+        state.deliveries = 0;
         state.paused = false;
+        state.ended = false;
         keys.clear();
+        deliveryValue.textContent = "0 / 3";
+        roundNote.textContent = "Select a staging load and move it to the building.";
+        worksite.classList.remove("tip-over");
+        endPanel.classList.remove("visible");
+        Object.keys(loads).forEach(id => {
+          loads[id].collected = false;
+          document.querySelector(`[data-load-id="${id}"]`)?.classList.remove("hidden-load");
+        });
         pauseButton.textContent = "Pause";
         pauseButton.setAttribute("aria-label", "Pause round");
         update();
@@ -908,7 +1052,7 @@
           keys.add(action);
         } else if (event.key === "f" || event.key === "F" || event.key === " ") {
           event.preventDefault();
-          toggleDemoLoad();
+          toggleLoad();
         } else if (event.key === "p" || event.key === "P") {
           event.preventDefault();
           togglePause();
@@ -927,7 +1071,7 @@
         const action = button.dataset.action;
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
-          if (action === "load") toggleDemoLoad();
+          if (action === "load") toggleLoad();
           else if (action === "pause") togglePause();
           else keys.add(action);
         });
@@ -936,12 +1080,14 @@
         button.addEventListener("pointercancel", () => keys.delete(action));
       });
 
+      restartButton.addEventListener("click", reset);
+
       let previousTime = performance.now();
       function animate(now) {
         const elapsed = Math.min((now - previousTime) / 1000, 0.05);
         previousTime = now;
 
-        if (!state.paused) {
+        if (!state.paused && !state.ended) {
           if (keys.has("left")) state.radius = Math.max(50, state.radius - 20 * elapsed);
           if (keys.has("right")) state.radius = Math.min(150, state.radius + 20 * elapsed);
           if (keys.has("down")) state.height = Math.max(0, state.height - 15 * elapsed);
