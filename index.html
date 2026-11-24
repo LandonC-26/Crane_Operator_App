@@ -243,7 +243,7 @@
       background: var(--yellow);
       border: 3px solid var(--steel-dark);
       transform: skewX(-5deg);
-      transform-origin: 50% 50%;
+      transform-origin: center;
     }
 
     .jib-end {
@@ -1107,36 +1107,30 @@
         const percent = capacityPercent();
         const worksiteHeight = worksite.clientHeight;
         const position = craneWorldPosition();
-        const mapPositionValue = mapPosition(worksite, position.x, position.y);
-        const hookXPercent = parseFloat(mapPositionValue.left);
-        const hookYPercent = parseFloat(mapPositionValue.top);
         const width = worksite.clientWidth;
         const worksiteRect = worksite.getBoundingClientRect();
         const towerRect = document.querySelector(".tower").getBoundingClientRect();
         const pivotX = towerRect.left - worksiteRect.left + towerRect.width / 2;
-        const pivotY = towerRect.top - worksiteRect.top + 44;
-
-        const craneAngleRadians = state.angle * Math.PI / 180;
-        const visualRadiusRatio = (state.radius - 50) / 100;
-        const visualRadiusPixels = visualRadiusRatio * 230 + 115;
-        let visualHookX = pivotX + Math.cos(craneAngleRadians) * visualRadiusPixels;
-        let visualHookY = pivotY + Math.sin(craneAngleRadians) * visualRadiusPixels * 0.18;
-
         const stagingRect = stagingZone.getBoundingClientRect();
         const buildingRect = buildingZone.getBoundingClientRect();
         const stagingLoad = stagingZone.querySelector(".load:not(.hidden-load)");
         const stagingLoadRect = stagingLoad?.getBoundingClientRect();
 
-        if (inStagingZone()) {
-          visualHookX = stagingLoadRect ? stagingLoadRect.left - worksiteRect.left + stagingLoadRect.width / 2 : stagingRect.left - worksiteRect.left + stagingRect.width / 2;
-          visualHookY = stagingLoadRect ? stagingLoadRect.top - worksiteRect.top + stagingLoadRect.height / 2 : stagingRect.top - worksiteRect.top + stagingRect.height * 0.8;
-        } else if (inBuildingZone()) {
-          visualHookX = buildingRect.left - worksiteRect.left + buildingRect.width / 2;
-          visualHookY = buildingRect.top - worksiteRect.top + buildingRect.height * 0.72;
-        }
+        const normalizedRadius = (state.radius - 50) / 100;
+        let visualHookX = pivotX + (normalizedRadius - 0.5) * width * 0.9;
+        visualHookX = Math.max(width * 0.12, Math.min(width * 0.88, visualHookX));
 
+        const groundTop = 58;
+        let visualHookY = worksiteHeight * (groundTop / 100) - (state.height / 300) * worksiteHeight * 0.38;
         visualHookX = Math.max(8, Math.min(width - 8, visualHookX));
         visualHookY = Math.max(24, Math.min(worksiteHeight - 24, visualHookY));
+
+        if (inStagingZone()) {
+          visualHookX = stagingLoadRect ? stagingLoadRect.left - worksiteRect.left + stagingLoadRect.width / 2 : stagingRect.left - worksiteRect.left + stagingRect.width / 2;
+        } else if (inBuildingZone()) {
+          visualHookX = buildingRect.left - worksiteRect.left + buildingRect.width / 2;
+        }
+
         const trolleyRelativeToJib = visualHookX - (towerRect.left - worksiteRect.left) + 118;
         trolley.style.left = `${Math.max(8, Math.min(290, trolleyRelativeToJib))}px`;
 
@@ -1148,7 +1142,7 @@
         cable.style.height = `${Math.max(20, visualHookY - cableTop)}px`;
         hook.style.left = `${visualHookX - 17}px`;
         hook.style.top = `${visualHookY - 14}px`;
-        jib.style.transform = `skewX(-5deg) rotate(${state.angle - 180}deg)`;
+        jib.style.transform = `skewX(-5deg) rotate(${(state.angle - 180) * 0.12}deg)`;
         angleValue.textContent = `${Math.round(state.angle)}°`;
         xValue.textContent = `${Math.round(position.x)} ft`;
         yValue.textContent = `${Math.round(position.y)} ft`;

@@ -103,3 +103,9 @@ Store project prompts here.
 - **Changed:** Anchored low-height staging/building hook positions to the actual staging-load and building rectangles, while retaining continuous 360-degree radial movement elsewhere.
 - **Changed:** Browser geometry confirmed the hook is inside the staging zone at X=-55 ft and inside the building zone after rotation; 360-degree angle changes moved the hook across left, rear, and right positions.
 - **Worked:** Yes; staging reach and 360-degree visual rotation were verified before commit.
+
+### Request 20
+- **Asked:** Simplify the crane visuals, remove visual bugs, and keep the app smooth and functional.
+- **Changed:** Removed conflicting angle/radius projection logic and reduced the crane to one direct radius-to-horizontal-hook model. Zone snapping now applies only when the hook is in staging or building range, and jib rotation is lightly damped.
+- **Changed:** Browser verification confirmed the hook is inside the staging zone for pickup and inside the building zone for drop, with successful first-load delivery.
+- **Worked:** Yes; simplified visual behavior was verified before commit.
